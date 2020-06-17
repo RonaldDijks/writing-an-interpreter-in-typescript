@@ -23,6 +23,14 @@ export class Lexer {
     this.position += 1;
   }
 
+  private peekChar(): string {
+    if (this.position >= this.input.length) {
+      return "\0";
+    } else {
+      return this.input[this.position];
+    }
+  }
+
   public nextToken(): Token | undefined {
     if (this.ended) return undefined;
     this.skipWhitespace();
@@ -30,22 +38,50 @@ export class Lexer {
 
     switch (this.current) {
       case "=":
-        token = { kind: "assign" };
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = { kind: "equals" };
+        } else {
+          token = { kind: "assign" };
+        }
+        break;
+      case "!":
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = { kind: "notEquals" };
+        } else {
+          token = { kind: "bang" };
+        }
+        break;
+      case "+":
+        token = { kind: "plus" };
+        break;
+      case "-":
+        token = { kind: "minus" };
+        break;
+      case "/":
+        token = { kind: "slash" };
+        break;
+      case "*":
+        token = { kind: "asterisk" };
+        break;
+      case "<":
+        token = { kind: "lessThen" };
+        break;
+      case ">":
+        token = { kind: "greaterThen" };
         break;
       case ";":
         token = { kind: "semicolon" };
+        break;
+      case ",":
+        token = { kind: "comma" };
         break;
       case "(":
         token = { kind: "leftParenthesis" };
         break;
       case ")":
         token = { kind: "rightParenthesis" };
-        break;
-      case ",":
-        token = { kind: "comma" };
-        break;
-      case "+":
-        token = { kind: "plus" };
         break;
       case "{":
         token = { kind: "leftBrace" };

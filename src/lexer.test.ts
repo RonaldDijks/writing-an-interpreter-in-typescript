@@ -11,6 +11,17 @@ test("testNextToken", () => {
     };
 
     let result = add(five, ten);
+    !-/*5;
+    5 < 10 > 5;
+
+    if (5 < 10) {
+        return true;
+    } else {
+        return false;
+    }
+
+    10 == 10;
+    10 != 9;
   `;
 
   const expected: Token[] = [
@@ -50,8 +61,48 @@ test("testNextToken", () => {
     { kind: "identifier", text: "ten" },
     { kind: "rightParenthesis" },
     { kind: "semicolon" },
+    { kind: "bang" },
+    { kind: "minus" },
+    { kind: "slash" },
+    { kind: "asterisk" },
+    { kind: "integer", text: "5" },
+    { kind: "semicolon" },
+    { kind: "integer", text: "5" },
+    { kind: "lessThen" },
+    { kind: "integer", text: "10" },
+    { kind: "greaterThen" },
+    { kind: "integer", text: "5" },
+    { kind: "semicolon" },
+    { kind: "if" },
+    { kind: "leftParenthesis" },
+    { kind: "integer", text: "5" },
+    { kind: "lessThen" },
+    { kind: "integer", text: "10" },
+    { kind: "rightParenthesis" },
+    { kind: "leftBrace" },
+    { kind: "return" },
+    { kind: "true" },
+    { kind: "semicolon" },
+    { kind: "rightBrace" },
+    { kind: "else" },
+    { kind: "leftBrace" },
+    { kind: "return" },
+    { kind: "false" },
+    { kind: "semicolon" },
+    { kind: "rightBrace" },
+    { kind: "integer", text: "10" },
+    { kind: "equals" },
+    { kind: "integer", text: "10" },
+    { kind: "semicolon" },
+    { kind: "integer", text: "10" },
+    { kind: "notEquals" },
+    { kind: "integer", text: "9" },
+    { kind: "semicolon" },
     { kind: "eof" },
   ];
+
+  // 10 == 10;
+  // 10 != 9;
 
   const actual = lex(input);
   expect(actual).toStrictEqual(expected);
