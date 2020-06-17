@@ -1,107 +1,107 @@
 import { Token, lookupIdentifier } from "./token";
 
 export class Lexer {
-  private input: string;
-  private position: number;
-  private current: string;
-  private ended: boolean;
+  private _input: string;
+  private _position: number;
+  private _current: string;
+  private _ended: boolean;
 
   public constructor(input: string) {
-    this.input = input;
-    this.position = 0;
-    this.current = "";
-    this.ended = false;
+    this._input = input;
+    this._position = 0;
+    this._current = "";
+    this._ended = false;
     this.readChar();
   }
 
   public readChar() {
-    if (this.position >= this.input.length) {
-      this.current = "\0";
+    if (this._position >= this._input.length) {
+      this._current = "\0";
     } else {
-      this.current = this.input[this.position];
+      this._current = this._input[this._position];
     }
-    this.position += 1;
+    this._position += 1;
   }
 
   private peekChar(): string {
-    if (this.position >= this.input.length) {
+    if (this._position >= this._input.length) {
       return "\0";
     } else {
-      return this.input[this.position];
+      return this._input[this._position];
     }
   }
 
   public nextToken(): Token | undefined {
-    if (this.ended) return undefined;
+    if (this._ended) return undefined;
     this.skipWhitespace();
     let token: Token;
 
-    switch (this.current) {
+    switch (this._current) {
       case "=":
         if (this.peekChar() === "=") {
           this.readChar();
-          token = { kind: "equals" };
+          token = { kind: "equals", text: "==" };
         } else {
-          token = { kind: "assign" };
+          token = { kind: "assign", text: "=" };
         }
         break;
       case "!":
         if (this.peekChar() === "=") {
           this.readChar();
-          token = { kind: "notEquals" };
+          token = { kind: "notEquals", text: "!=" };
         } else {
-          token = { kind: "bang" };
+          token = { kind: "bang", text: "!" };
         }
         break;
       case "+":
-        token = { kind: "plus" };
+        token = { kind: "plus", text: "+" };
         break;
       case "-":
-        token = { kind: "minus" };
+        token = { kind: "minus", text: "-" };
         break;
       case "/":
-        token = { kind: "slash" };
+        token = { kind: "slash", text: "/" };
         break;
       case "*":
-        token = { kind: "asterisk" };
+        token = { kind: "asterisk", text: "*" };
         break;
       case "<":
-        token = { kind: "lessThen" };
+        token = { kind: "lessThen", text: "<" };
         break;
       case ">":
-        token = { kind: "greaterThen" };
+        token = { kind: "greaterThen", text: ">" };
         break;
       case ";":
-        token = { kind: "semicolon" };
+        token = { kind: "semicolon", text: ";" };
         break;
       case ",":
-        token = { kind: "comma" };
+        token = { kind: "comma", text: "," };
         break;
       case "(":
-        token = { kind: "leftParenthesis" };
+        token = { kind: "leftParenthesis", text: "(" };
         break;
       case ")":
-        token = { kind: "rightParenthesis" };
+        token = { kind: "rightParenthesis", text: ")" };
         break;
       case "{":
-        token = { kind: "leftBrace" };
+        token = { kind: "leftBrace", text: "{" };
         break;
       case "}":
-        token = { kind: "rightBrace" };
+        token = { kind: "rightBrace", text: "}" };
         break;
       case "\0":
-        this.ended = true;
-        token = { kind: "eof" };
+        this._ended = true;
+        token = { kind: "eof", text: "\0" };
         break;
       default: {
-        if (isLetter(this.current)) {
+        if (isLetter(this._current)) {
           token = this.readIdentifier();
           return token;
-        } else if (isNumber(this.current)) {
+        } else if (isNumber(this._current)) {
           token = this.readNumber();
           return token;
         } else {
-          token = { kind: "illegal" };
+          token = { kind: "illegal", text: this._current };
           break;
         }
       }
@@ -109,25 +109,28 @@ export class Lexer {
     this.readChar();
     return token!;
   }
+
   skipWhitespace() {
-    while (isWhitespace(this.current)) {
+    while (isWhitespace(this._current)) {
       this.readChar();
     }
   }
+
   readIdentifier(): Token {
-    const start = this.position - 1;
-    while (isLetter(this.current)) {
+    const start = this._position - 1;
+    while (isLetter(this._current)) {
       this.readChar();
     }
-    const text = this.input.substring(start, this.position - 1);
+    const text = this._input.substring(start, this._position - 1);
     return lookupIdentifier(text);
   }
+
   readNumber(): Token {
-    const start = this.position - 1;
-    while (isNumber(this.current)) {
+    const start = this._position - 1;
+    while (isNumber(this._current)) {
       this.readChar();
     }
-    const text = this.input.substring(start, this.position - 1);
+    const text = this._input.substring(start, this._position - 1);
     return { kind: "integer", text };
   }
 }

@@ -1,42 +1,51 @@
-export type Token =
-  | { kind: "identifier"; text: string }
-  | { kind: "integer"; text: string }
-  | { kind: "illegal" }
-  | { kind: "eof" }
-  | { kind: "assign" }
-  | { kind: "plus" }
-  | { kind: "minus" }
-  | { kind: "bang" }
-  | { kind: "asterisk" }
-  | { kind: "slash" }
-  | { kind: "lessThen" }
-  | { kind: "greaterThen" }
-  | { kind: "comma" }
-  | { kind: "semicolon" }
-  | { kind: "leftParenthesis" }
-  | { kind: "rightParenthesis" }
-  | { kind: "leftBrace" }
-  | { kind: "rightBrace" }
-  | { kind: "function" }
-  | { kind: "let" }
-  | { kind: "if" }
-  | { kind: "else" }
-  | { kind: "return" }
-  | { kind: "true" }
-  | { kind: "false" }
-  | { kind: "equals" }
-  | { kind: "notEquals" };
+export interface Token {
+  kind: TokenKind;
+  text: string;
+}
 
-const keywords = new Map<string, Token>([
-  ["fn", { kind: "function" }],
-  ["let", { kind: "let" }],
-  ["true", { kind: "true" }],
-  ["false", { kind: "false" }],
-  ["if", { kind: "if" }],
-  ["else", { kind: "else" }],
-  ["return", { kind: "return" }],
+export type TokenKind =
+  | "identifier"
+  | "integer"
+  | "illegal"
+  | "eof"
+  | "assign"
+  | "plus"
+  | "minus"
+  | "bang"
+  | "asterisk"
+  | "slash"
+  | "lessThen"
+  | "greaterThen"
+  | "comma"
+  | "semicolon"
+  | "leftParenthesis"
+  | "rightParenthesis"
+  | "leftBrace"
+  | "rightBrace"
+  | "function"
+  | "let"
+  | "if"
+  | "else"
+  | "return"
+  | "true"
+  | "false"
+  | "equals"
+  | "notEquals";
+
+const keywords = new Map<string, TokenKind>([
+  ["fn", "function"],
+  ["let", "let"],
+  ["true", "true"],
+  ["false", "false"],
+  ["if", "if"],
+  ["else", "else"],
+  ["return", "return"],
 ]);
 
 export const lookupIdentifier = (text: string): Token => {
-  return keywords.get(text) || { kind: "identifier", text };
+  const kind = keywords.get(text);
+  if (kind) {
+    return { kind, text };
+  }
+  return { kind: "identifier", text };
 };
