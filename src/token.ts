@@ -13,3 +13,12 @@ export type Token =
   | { kind: "rightBrace" }
   | { kind: "function" }
   | { kind: "let" };
+
+const keywords = new Map<string, Token>([
+  ["fn", { kind: "function" }],
+  ["let", { kind: "let" }],
+]);
+
+export const lookupIdentifier = (text: string): Token => {
+  return keywords.get(text) || { kind: "identifier", text };
+};

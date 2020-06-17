@@ -1,4 +1,4 @@
-import { Token } from "./token";
+import { Token, lookupIdentifier } from "./token";
 
 export class Lexer {
   private input: string;
@@ -25,6 +25,7 @@ export class Lexer {
 
   public nextToken(): Token | undefined {
     if (this.ended) return undefined;
+    this.skipWhitespace();
     let token: Token;
 
     switch (this.current) {
@@ -56,9 +57,42 @@ export class Lexer {
         this.ended = true;
         token = { kind: "eof" };
         break;
+      default: {
+        if (isLetter(this.current)) {
+          token = this.readIdentifier();
+          return token;
+        } else if (isNumber(this.current)) {
+          token = this.readNumber();
+          return token;
+        } else {
+          token = { kind: "illegal" };
+          break;
+        }
+      }
     }
     this.readChar();
     return token!;
+  }
+  skipWhitespace() {
+    while (isWhitespace(this.current)) {
+      this.readChar();
+    }
+  }
+  readIdentifier(): Token {
+    const start = this.position - 1;
+    while (isLetter(this.current)) {
+      this.readChar();
+    }
+    const text = this.input.substring(start, this.position - 1);
+    return lookupIdentifier(text);
+  }
+  readNumber(): Token {
+    const start = this.position - 1;
+    while (isNumber(this.current)) {
+      this.readChar();
+    }
+    const text = this.input.substring(start, this.position - 1);
+    return { kind: "integer", text };
   }
 }
 
@@ -72,3 +106,7 @@ export const lex = (input: string): Token[] => {
   }
   return tokens;
 };
+
+const isNumber = (char: string) => /^[0-9]$/.test(char);
+const isLetter = (char: string) => /^[a-zA-Z]$/.test(char);
+const isWhitespace = (char: string) => /^\s$/.test(char);
