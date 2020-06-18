@@ -1,12 +1,3 @@
-export interface Program {
-  kind: "program";
-  statements: Statement[];
-}
-
-export function program(statements: Statement[]): Program {
-  return { kind: "program", statements };
-}
-
 export interface LetStatement {
   kind: "let";
   name: Identifier;
@@ -36,6 +27,22 @@ export function returnStatement(returnValue: Expression): ReturnStatement {
   };
 }
 
+export interface ExpressionStatement {
+  kind: "expressionStatement";
+  expression: Expression;
+}
+
+export function expressionStatement(
+  expression: Expression
+): ExpressionStatement {
+  return {
+    kind: "expressionStatement",
+    expression,
+  };
+}
+
+export type Statement = LetStatement | ReturnStatement | ExpressionStatement;
+
 export interface Identifier {
   kind: "identifier";
   value: string;
@@ -48,14 +55,30 @@ export function identifier(value: string): Identifier {
   };
 }
 
-export interface ExpressionStatement {
-  kind: "expressionStatement";
-  expression: Expression;
+export interface IntegerLiteral {
+  kind: "integerLiteral";
+  value: number;
 }
 
-export type Statement = LetStatement | ReturnStatement | ExpressionStatement;
-export type Expression = Identifier;
+export function integerLiteral(value: number): IntegerLiteral {
+  return {
+    kind: "integerLiteral",
+    value,
+  };
+}
+
+export type Expression = Identifier | IntegerLiteral;
+
 export type Node = Statement | Expression;
+
+export interface Program {
+  kind: "program";
+  statements: Statement[];
+}
+
+export function program(statements: Statement[]): Program {
+  return { kind: "program", statements };
+}
 
 export function toString(node: Node | Program): string {
   switch (node.kind) {
@@ -81,6 +104,8 @@ export function toString(node: Node | Program): string {
       return `${toString(node.expression)};`;
     case "identifier":
       return node.value;
+    case "integerLiteral":
+      return `${node.value.toString()};`;
     case "program":
       return node.statements.map(toString).join("\n");
   }

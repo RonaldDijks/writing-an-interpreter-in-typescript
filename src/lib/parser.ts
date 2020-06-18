@@ -2,8 +2,8 @@ import { Lexer } from "./lexer";
 import { Token, TokenKind } from "./token";
 import * as ast from "./ast";
 
-type PrefixParserFunction = () => ast.Expression;
-type InfixParserFunction = (_: ast.Expression) => ast.Expression;
+type PrefixParserFunction = () => ast.Expression | undefined;
+type InfixParserFunction = (_: ast.Expression) => ast.Expression | undefined;
 
 export enum Precedence {
   Lowest = 0,
@@ -19,7 +19,15 @@ export class Parser {
   private _lexer: Lexer;
   private _currentToken!: Token;
   private _peekToken!: Token | undefined;
-  private _prefixParseFunctions: Map<TokenKind, PrefixParserFunction>;
+
+  private _prefixParseFunctions: Map<TokenKind, PrefixParserFunction> = new Map<
+    TokenKind,
+    PrefixParserFunction
+  >([
+    ["integer", this.parseIntegerLiteral.bind(this)],
+    ["identifier", this.parseIdentifier.bind(this)],
+  ]);
+
   private _infixParseFunctions: Map<TokenKind, InfixParserFunction>;
 
   public errors: string[];
@@ -27,11 +35,6 @@ export class Parser {
   public constructor(lexer: Lexer) {
     this._lexer = lexer;
     this.errors = [];
-    this._prefixParseFunctions = new Map();
-    this._prefixParseFunctions.set(
-      "identifier",
-      this.parseIdentifier.bind(this)
-    );
     this._infixParseFunctions = new Map();
     this._currentToken = lexer.nextToken()!;
     this._peekToken = lexer.nextToken();
@@ -136,7 +139,16 @@ export class Parser {
     return leftExpression;
   }
 
-  private parseIdentifier(): ast.Identifier {
+  private parseIdentifier(): ast.Identifier | undefined {
     return { kind: "identifier", value: this._currentToken.text };
+  }
+
+  private parseIntegerLiteral(): ast.IntegerLiteral | undefined {
+    const value = Number(this._currentToken.text);
+    if (value === NaN) {
+      this.errors.push(`could not parse ${this._currentToken.text} as integer`);
+      return undefined;
+    }
+    return { kind: "integerLiteral", value };
   }
 }

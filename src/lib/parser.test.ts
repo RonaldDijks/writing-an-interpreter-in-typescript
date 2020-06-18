@@ -84,3 +84,23 @@ test("test identifier expression", () => {
 
   expect(identifier.value).toBe("foobar");
 });
+
+test("test integer literal expression", () => {
+  const input = "5;";
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  const statement = program?.statements[0];
+
+  if (!statement || statement.kind !== "expressionStatement") {
+    throw new Error("statement is not an expressionstatement");
+  }
+
+  if (statement.expression.kind !== "integerLiteral") {
+    throw new Error("statement is not an integerLiteral");
+  }
+
+  expect(statement.expression.value).toBe(5);
+});
