@@ -2,16 +2,37 @@ import { Lexer } from "./lexer";
 import { Token, TokenKind } from "./token";
 import * as ast from "./ast";
 
+type PrefixParserFunction = () => ast.Expression;
+type InfixParserFunction = (_: ast.Expression) => ast.Expression;
+
+export enum Precedence {
+  Lowest = 0,
+  Equals = 1,
+  LessGreater = 2,
+  Sum = 3,
+  Product = 4,
+  Prefix = 5,
+  Call = 6,
+}
+
 export class Parser {
   private _lexer: Lexer;
   private _currentToken!: Token;
   private _peekToken!: Token | undefined;
+  private _prefixParseFunctions: Map<TokenKind, PrefixParserFunction>;
+  private _infixParseFunctions: Map<TokenKind, InfixParserFunction>;
 
   public errors: string[];
 
   public constructor(lexer: Lexer) {
     this._lexer = lexer;
     this.errors = [];
+    this._prefixParseFunctions = new Map();
+    this._prefixParseFunctions.set(
+      "identifier",
+      this.parseIdentifier.bind(this)
+    );
+    this._infixParseFunctions = new Map();
     this._currentToken = lexer.nextToken()!;
     this._peekToken = lexer.nextToken();
   }
@@ -64,18 +85,8 @@ export class Parser {
       case "return":
         return this.parseReturnStatement();
       default:
-        return undefined;
+        return this.parseExpressionStatement();
     }
-  }
-
-  parseReturnStatement(): ast.ReturnStatement | undefined {
-    this.nextToken();
-
-    while (!this.currentTokenIs("semicolon")) {
-      this.nextToken();
-    }
-
-    return ast.returnStatement(ast.identifier("placeholder"));
   }
 
   private parseLetStatement(): ast.LetStatement | undefined {
@@ -94,5 +105,38 @@ export class Parser {
     }
 
     return ast.letStatement(name, ast.identifier("placeholder"));
+  }
+
+  private parseReturnStatement(): ast.ReturnStatement | undefined {
+    this.nextToken();
+
+    while (!this.currentTokenIs("semicolon")) {
+      this.nextToken();
+    }
+
+    return ast.returnStatement(ast.identifier("placeholder"));
+  }
+
+  private parseExpressionStatement(): ast.ExpressionStatement | undefined {
+    const expression = this.parseExpression(Precedence.Lowest);
+
+    if (!expression) return undefined;
+
+    while (this.peekTokenIs("semicolon")) {
+      this.nextToken();
+    }
+
+    return { kind: "expressionStatement", expression };
+  }
+
+  private parseExpression(precedence: Precedence): ast.Expression | undefined {
+    const prefix = this._prefixParseFunctions.get(this._currentToken.kind);
+    if (!prefix) return undefined;
+    const leftExpression = prefix();
+    return leftExpression;
+  }
+
+  private parseIdentifier(): ast.Identifier {
+    return { kind: "identifier", value: this._currentToken.text };
   }
 }

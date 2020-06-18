@@ -58,3 +58,29 @@ test("test return statement", () => {
     }
   });
 });
+
+test("test identifier expression", () => {
+  const input = "foobar;";
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  if (!program) {
+    throw new Error(`Program cannot be undefined.`);
+  }
+
+  const statement = program.statements[0];
+
+  if (statement.kind !== "expressionStatement") {
+    throw new Error("program.statements[0] must be expressionStatement");
+  }
+
+  const identifier = statement.expression;
+
+  if (identifier.kind !== "identifier") {
+    throw new Error(`ident is not an identifier`);
+  }
+
+  expect(identifier.value).toBe("foobar");
+});
