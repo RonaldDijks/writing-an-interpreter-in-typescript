@@ -1,6 +1,12 @@
 import { Lexer } from "./lexer";
 import { Token, TokenKind } from "./token";
-import { Program, Statement, LetStatement, Identifier } from "./ast";
+import {
+  Program,
+  Statement,
+  LetStatement,
+  Identifier,
+  ReturnStatement,
+} from "./ast";
 
 export class Parser {
   private _lexer: Lexer;
@@ -61,9 +67,24 @@ export class Parser {
     switch (this._currentToken.kind) {
       case "let":
         return this.parseLetStatement();
+      case "return":
+        return this.parseReturnStatement();
       default:
         return undefined;
     }
+  }
+
+  parseReturnStatement(): ReturnStatement | undefined {
+    this.nextToken();
+
+    while (!this.currentTokenIs("semicolon")) {
+      this.nextToken();
+    }
+
+    return {
+      kind: "return",
+      returnValue: { kind: "identifier", value: "placeholder" },
+    };
   }
 
   private parseLetStatement(): LetStatement | undefined {
@@ -71,16 +92,19 @@ export class Parser {
       return undefined;
     }
 
-    const identifier: Identifier = { value: this._currentToken.text };
+    const identifier: Identifier = {
+      kind: "identifier",
+      value: this._currentToken.text,
+    };
 
     if (!this.expectPeek("assign")) {
       return undefined;
     }
 
-    while (this._currentToken.kind !== "semicolon") {
+    while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
 
-    return { name: identifier, value: identifier };
+    return { kind: "let", name: identifier, value: identifier };
   }
 }

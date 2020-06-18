@@ -1,19 +1,7 @@
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 
-test("testLetStatement", () => {
-  const input = `
-    let x 5;
-    let y = 10
-    let  = 838383;
-  `;
-
-  const lexer = new Lexer(input);
-  const parser = new Parser(lexer);
-  const program = parser.parseProgram();
-
-  expect(program).not.toBe(undefined);
-
+const checkParserErrors = (parser: Parser) => {
   if (parser.errors.length !== 0) {
     let message = "The parser produces the following errors:\n\n";
     for (const error of parser.errors) {
@@ -21,8 +9,52 @@ test("testLetStatement", () => {
     }
     throw new Error(message);
   }
+};
 
-  const identifiers = program?.statements.map((x) => x.name.value);
+test("testLetStatement", () => {
+  const input = `
+    let x = 5;
+    let y = 10;
+    let foobar = 838383;
+  `;
+
   const tests = ["x", "y", "foobar"];
+
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+
+  expect(program).not.toBeUndefined();
+  checkParserErrors(parser);
+
+  const identifiers = program?.statements.map((x) => {
+    if (x.kind !== "let") {
+      throw new Error(`expected let, got ${x.kind}`);
+    }
+    return x.name.value;
+  });
+
   expect(identifiers).toStrictEqual(tests);
+});
+
+test("test return statement", () => {
+  const input = `
+    return 5;
+    return 10;
+    return 993322;
+  `;
+
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  expect(program).not.toBeUndefined();
+  expect(program?.statements.length).toBe(3);
+
+  program?.statements.forEach((statement) => {
+    if (statement.kind !== "return") {
+      throw new Error(`expected return, got ${statement.kind}`);
+    }
+  });
 });
