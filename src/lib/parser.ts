@@ -26,6 +26,8 @@ export class Parser {
   >([
     ["integer", this.parseIntegerLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
+    ["bang", this.parsePrefixExpression.bind(this)],
+    ["minus", this.parsePrefixExpression.bind(this)],
   ]);
 
   private _infixParseFunctions: Map<TokenKind, InfixParserFunction>;
@@ -134,7 +136,10 @@ export class Parser {
 
   private parseExpression(precedence: Precedence): ast.Expression | undefined {
     const prefix = this._prefixParseFunctions.get(this._currentToken.kind);
-    if (!prefix) return undefined;
+    if (!prefix) {
+      this.errors.push(`no prefix parse function for ${prefix} found`);
+      return undefined;
+    }
     const leftExpression = prefix();
     return leftExpression;
   }
@@ -150,5 +155,13 @@ export class Parser {
       return undefined;
     }
     return { kind: "integerLiteral", value };
+  }
+
+  private parsePrefixExpression(): ast.PrefixExpression | undefined {
+    const operator = this._currentToken.text;
+    this.nextToken();
+    const right = this.parseExpression(Precedence.Prefix);
+    if (!right) return undefined;
+    return { kind: "prefixExpression", operator, right };
   }
 }

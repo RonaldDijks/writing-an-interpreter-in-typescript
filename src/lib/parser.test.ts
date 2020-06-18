@@ -1,5 +1,6 @@
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
+import * as ast from "./ast";
 
 const checkParserErrors = (parser: Parser) => {
   if (parser.errors.length !== 0) {
@@ -104,3 +105,52 @@ test("test integer literal expression", () => {
 
   expect(statement.expression.value).toBe(5);
 });
+
+test("test parsing prefix expressions", () => {
+  const tests: [string, string, number][] = [
+    ["!5;", "!", 5],
+    ["-15;", "-", 15],
+  ];
+
+  for (const [input, operator, integerValue] of tests) {
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+
+    expect(program?.statements.length).toBe(1);
+
+    const statement = program?.statements[0];
+
+    if (!statement) {
+      throw new Error("statement cannot be null.");
+    }
+
+    if (statement.kind !== "expressionStatement") {
+      throw new Error(`expected expressionStatement, got ${statement.kind}`);
+    }
+
+    if (statement.expression.kind !== "prefixExpression") {
+      throw new Error(
+        "expected prefixExpression, got " + statement.expression.kind
+      );
+    }
+
+    if (statement.expression.operator != operator) {
+      throw new Error(
+        `expected operator ${operator}, got ${statement.expression.operator}`
+      );
+    }
+
+    testIntegerLiteral(statement.expression.right, integerValue);
+  }
+});
+
+const testIntegerLiteral = (expr: ast.Expression, value: number) => {
+  if (expr.kind !== "integerLiteral") {
+    throw new Error(`expected integerLiteral, got ${expr.kind}`);
+  }
+  if (expr.value !== value) {
+    throw new Error(`expected ${value}, got ${expr.value}`);
+  }
+};

@@ -1,3 +1,5 @@
+import { Token } from "./token";
+
 export interface LetStatement {
   kind: "let";
   name: Identifier;
@@ -67,7 +69,13 @@ export function integerLiteral(value: number): IntegerLiteral {
   };
 }
 
-export type Expression = Identifier | IntegerLiteral;
+export interface PrefixExpression {
+  kind: "prefixExpression";
+  operator: string;
+  right: Expression;
+}
+
+export type Expression = Identifier | IntegerLiteral | PrefixExpression;
 
 export type Node = Statement | Expression;
 
@@ -106,6 +114,8 @@ export function toString(node: Node | Program): string {
       return node.value;
     case "integerLiteral":
       return `${node.value.toString()};`;
+    case "prefixExpression":
+      return `(${node.operator}${toString(node.right)})`;
     case "program":
       return node.statements.map(toString).join("\n");
   }
