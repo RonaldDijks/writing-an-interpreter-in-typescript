@@ -114,24 +114,19 @@ export class Parser {
 
   private parseReturnStatement(): ast.ReturnStatement | undefined {
     this.nextToken();
-
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
-
     return ast.returnStatement(ast.identifier("placeholder"));
   }
 
   private parseExpressionStatement(): ast.ExpressionStatement | undefined {
     const expression = this.parseExpression(Precedence.Lowest);
-
     if (!expression) return undefined;
-
     while (this.peekTokenIs("semicolon")) {
       this.nextToken();
     }
-
-    return { kind: "expressionStatement", expression };
+    return ast.expressionStatement(expression);
   }
 
   private parseExpression(precedence: Precedence): ast.Expression | undefined {
@@ -140,12 +135,11 @@ export class Parser {
       this.errors.push(`no prefix parse function for ${prefix} found`);
       return undefined;
     }
-    const leftExpression = prefix();
-    return leftExpression;
+    return prefix();
   }
 
   private parseIdentifier(): ast.Identifier | undefined {
-    return { kind: "identifier", value: this._currentToken.text };
+    return ast.identifier(this._currentToken.text);
   }
 
   private parseIntegerLiteral(): ast.IntegerLiteral | undefined {
@@ -154,7 +148,7 @@ export class Parser {
       this.errors.push(`could not parse ${this._currentToken.text} as integer`);
       return undefined;
     }
-    return { kind: "integerLiteral", value };
+    return ast.integerLiteral(value);
   }
 
   private parsePrefixExpression(): ast.PrefixExpression | undefined {
@@ -162,6 +156,6 @@ export class Parser {
     this.nextToken();
     const right = this.parseExpression(Precedence.Prefix);
     if (!right) return undefined;
-    return { kind: "prefixExpression", operator, right };
+    return ast.prefixExpression(operator, right);
   }
 }

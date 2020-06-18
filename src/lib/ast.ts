@@ -75,6 +75,17 @@ export interface PrefixExpression {
   right: Expression;
 }
 
+export function prefixExpression(
+  operator: string,
+  right: Expression
+): PrefixExpression {
+  return {
+    kind: "prefixExpression",
+    operator,
+    right,
+  };
+}
+
 export type Expression = Identifier | IntegerLiteral | PrefixExpression;
 
 export type Node = Statement | Expression;
