@@ -1,12 +1,6 @@
 import { Lexer } from "./lexer";
 import { Token, TokenKind } from "./token";
-import {
-  Program,
-  Statement,
-  LetStatement,
-  Identifier,
-  ReturnStatement,
-} from "./ast";
+import * as ast from "./ast";
 
 export class Parser {
   private _lexer: Lexer;
@@ -53,17 +47,17 @@ export class Parser {
     this.errors.push(error);
   }
 
-  public parseProgram(): Program | undefined {
-    const statements: Statement[] = [];
+  public parseProgram(): ast.Program | undefined {
+    const statements: ast.Statement[] = [];
     while (this._currentToken.kind !== "eof") {
       const statement = this.parseStatement();
       if (statement) statements.push(statement);
       this.nextToken();
     }
-    return { statements };
+    return ast.program(statements);
   }
 
-  private parseStatement(): Statement | undefined {
+  private parseStatement(): ast.Statement | undefined {
     switch (this._currentToken.kind) {
       case "let":
         return this.parseLetStatement();
@@ -74,28 +68,22 @@ export class Parser {
     }
   }
 
-  parseReturnStatement(): ReturnStatement | undefined {
+  parseReturnStatement(): ast.ReturnStatement | undefined {
     this.nextToken();
 
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
 
-    return {
-      kind: "return",
-      returnValue: { kind: "identifier", value: "placeholder" },
-    };
+    return ast.returnStatement(ast.identifier("placeholder"));
   }
 
-  private parseLetStatement(): LetStatement | undefined {
+  private parseLetStatement(): ast.LetStatement | undefined {
     if (!this.expectPeek("identifier")) {
       return undefined;
     }
 
-    const identifier: Identifier = {
-      kind: "identifier",
-      value: this._currentToken.text,
-    };
+    const name = ast.identifier(this._currentToken.text);
 
     if (!this.expectPeek("assign")) {
       return undefined;
@@ -105,6 +93,6 @@ export class Parser {
       this.nextToken();
     }
 
-    return { kind: "let", name: identifier, value: identifier };
+    return ast.letStatement(name, ast.identifier("placeholder"));
   }
 }
