@@ -1,5 +1,3 @@
-import { Token } from "./token";
-
 export interface LetStatement {
   kind: "let";
   name: Identifier;
@@ -86,7 +84,31 @@ export function prefixExpression(
   };
 }
 
-export type Expression = Identifier | IntegerLiteral | PrefixExpression;
+export interface InfixExpression {
+  kind: "infixExpression";
+  operator: string;
+  left: Expression;
+  right: Expression;
+}
+
+export function infixExpression(
+  operator: string,
+  left: Expression,
+  right: Expression
+): InfixExpression {
+  return {
+    kind: "infixExpression",
+    operator,
+    left,
+    right,
+  };
+}
+
+export type Expression =
+  | Identifier
+  | IntegerLiteral
+  | PrefixExpression
+  | InfixExpression;
 
 export type Node = Statement | Expression;
 
@@ -120,14 +142,24 @@ export function toString(node: Node | Program): string {
       return result;
     }
     case "expressionStatement":
-      return `${toString(node.expression)};`;
+      return `${toString(node.expression)}`;
     case "identifier":
       return node.value;
     case "integerLiteral":
-      return `${node.value.toString()};`;
+      return `${node.value.toString()}`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
+    case "infixExpression":
+      let result = "";
+      result += "(";
+      result += toString(node.left);
+      result += " ";
+      result += node.operator;
+      result += " ";
+      result += toString(node.right);
+      result += ")";
+      return result;
     case "program":
-      return node.statements.map(toString).join("\n");
+      return node.statements.map(toString).join("");
   }
 }

@@ -154,3 +154,73 @@ const testIntegerLiteral = (expr: ast.Expression, value: number) => {
     throw new Error(`expected ${value}, got ${expr.value}`);
   }
 };
+
+test("test parsing infix expression", () => {
+  const tests: [string, number, string, number][] = [
+    ["5 + 5;", 5, "+", 5],
+    ["5 - 5;", 5, "-", 5],
+    ["5 * 5;", 5, "*", 5],
+    ["5 / 5;", 5, "/", 5],
+    ["5 > 5;", 5, ">", 5],
+    ["5 < 5;", 5, "<", 5],
+    ["5 == 5;", 5, "==", 5],
+    ["5 != 5;", 5, "!=", 5],
+  ];
+
+  for (const [input, left, operator, right] of tests) {
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+
+    const statement = program?.statements[0];
+
+    if (!statement) {
+      throw new Error("statement cannot be null.");
+    }
+
+    if (statement.kind !== "expressionStatement") {
+      throw new Error(`expected expressionStatement, got ${statement.kind}`);
+    }
+
+    const expression = statement.expression;
+
+    if (expression.kind !== "infixExpression") {
+      throw new Error(`expected infixExpression, got: ${expression.kind}`);
+    }
+
+    if (expression.operator != operator) {
+      throw new Error(`expected ${operator}, got: ${expression.operator}`);
+    }
+
+    testIntegerLiteral(expression.left, left);
+    testIntegerLiteral(expression.right, right);
+  }
+});
+
+test("test operator precedence parsing", () => {
+  const tests = [
+    ["-a * b", "((-a) * b)"],
+    ["!-a", "(!(-a))"],
+    ["a + b + c", "((a + b) + c)"],
+    ["a + b - c", "((a + b) - c)"],
+    ["a * b * c", "((a * b) * c)"],
+    ["a * b / c", "((a * b) / c)"],
+    ["a + b / c", "(a + (b / c))"],
+    ["a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"],
+    ["3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"],
+    ["5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"],
+    ["5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"],
+    ["3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"],
+  ];
+
+  for (const [input, expected] of tests) {
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    expect(program).not.toBeUndefined();
+    const actual = ast.toString(program!);
+    expect(actual).toBe(expected);
+  }
+});
