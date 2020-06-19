@@ -38,6 +38,7 @@ export class Parser {
     ["identifier", this.parseIdentifier.bind(this)],
     ["bang", this.parsePrefixExpression.bind(this)],
     ["minus", this.parsePrefixExpression.bind(this)],
+    ["leftParenthesis", this.parseGroupedExpression.bind(this)],
   ]);
 
   private _infixParseFunctions = new Map<TokenKind, InfixParserFunction>([
@@ -218,5 +219,14 @@ export class Parser {
     const right = this.parseExpression(precedence);
     if (!right) return;
     return ast.infixExpression(operator, left, right);
+  }
+
+  private parseGroupedExpression(): ast.Expression | undefined {
+    this.nextToken();
+    const expression = this.parseExpression(Precedence.Lowest);
+    if (!this.expectPeek("rightParenthesis")) {
+      return;
+    }
+    return expression;
   }
 }

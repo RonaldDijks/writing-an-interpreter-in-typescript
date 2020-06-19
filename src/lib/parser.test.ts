@@ -138,52 +138,37 @@ test("test parsing infix expression", () => {
 });
 
 test("test operator precedence parsing", () => {
-  const expected = [
-    "((-a) * b)",
-    "(!(-a))",
-    "((a + b) + c)",
-    "((a + b) - c)",
-    "((a * b) * c)",
-    "((a * b) / c)",
-    "(a + (b / c))",
-    "(((a + (b * c)) + (d / e)) - f)",
-    "(3 + 4)((-5) * 5)",
-    "((5 > 4) == (3 < 4))",
-    "((5 < 4) != (3 > 4))",
-    "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
-    "true",
-    "true",
-    "((3 > 5) == false)",
-    "((3 < 5) == true)",
-  ];
-
-  const actual = [
-    "-a * b",
-    "!-a",
-    "a + b + c",
-    "a + b - c",
-    "a * b * c",
-    "a * b / c",
-    "a + b / c",
-    "a + b * c + d / e - f",
-    "3 + 4; -5 * 5",
-    "5 > 4 == 3 < 4",
-    "5 < 4 != 3 > 4",
-    "3 + 4 * 5 == 3 * 1 + 4 * 5",
-    "true",
-    "true",
-    "3 > 5 == false",
-    "3 < 5 == true",
-  ].map((input) => {
+  [
+    ["-a * b", "((-a) * b)"],
+    ["!-a", "(!(-a))"],
+    ["a + b + c", "((a + b) + c)"],
+    ["a + b - c", "((a + b) - c)"],
+    ["a * b * c", "((a * b) * c)"],
+    ["a * b / c", "((a * b) / c)"],
+    ["a + b / c", "(a + (b / c))"],
+    ["a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"],
+    ["3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"],
+    ["5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"],
+    ["5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"],
+    ["3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"],
+    ["true", "true"],
+    ["true", "true"],
+    ["3 > 5 == false", "((3 > 5) == false)"],
+    ["3 < 5 == true", "((3 < 5) == true)"],
+    ["1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"],
+    ["(5 + 5) * 2", "((5 + 5) * 2)"],
+    ["2 / (5 + 5)", "(2 / (5 + 5))"],
+    ["-(5 + 5)", "(-(5 + 5))"],
+    ["!(true == true)", "(!(true == true))"],
+  ].forEach(([input, expected]) => {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
     if (!program) return;
     checkParserErrors(parser);
-    return ast.toString(program);
+    const actual = ast.toString(program);
+    expect(actual).toStrictEqual(expected);
   });
-
-  expect(actual).toStrictEqual(expected);
 });
 
 test("test boolean expression", () => {
