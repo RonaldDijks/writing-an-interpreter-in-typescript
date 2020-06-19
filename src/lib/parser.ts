@@ -122,28 +122,36 @@ export class Parser {
 
   private parseLetStatement(): ast.LetStatement | undefined {
     if (!this.expectPeek("identifier")) {
-      return undefined;
+      return;
     }
 
     const name = ast.identifier(this._currentToken.text);
 
     if (!this.expectPeek("assign")) {
-      return undefined;
+      return;
     }
+
+    this.nextToken();
+
+    const expr = this.parseExpression(Precedence.Lowest);
 
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
 
-    return ast.letStatement(name, ast.identifier("placeholder"));
+    return ast.letStatement(name, expr!);
   }
 
   private parseReturnStatement(): ast.ReturnStatement | undefined {
     this.nextToken();
+
+    const expression = this.parseExpression(Precedence.Lowest);
+
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
-    return ast.returnStatement(ast.identifier("placeholder"));
+
+    return ast.returnStatement(expression!);
   }
 
   private parseExpressionStatement(): ast.ExpressionStatement | undefined {
