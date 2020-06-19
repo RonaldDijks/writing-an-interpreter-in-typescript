@@ -88,9 +88,19 @@ test("test parsing prefix expressions", () => {
         ast.prefixExpression("-", ast.integerLiteral(15))
       ),
     ]),
+    ast.program([
+      ast.expressionStatement(
+        ast.prefixExpression("!", ast.booleanLiteral(true))
+      ),
+    ]),
+    ast.program([
+      ast.expressionStatement(
+        ast.prefixExpression("!", ast.booleanLiteral(false))
+      ),
+    ]),
   ];
 
-  const actual = ["!5;", "-15;"].map((input) => {
+  const actual = ["!5;", "-15;", "!true", "!false"].map((input) => {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
     const program = parser.parseProgram();
@@ -141,6 +151,10 @@ test("test operator precedence parsing", () => {
     "((5 > 4) == (3 < 4))",
     "((5 < 4) != (3 > 4))",
     "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+    "true",
+    "true",
+    "((3 > 5) == false)",
+    "((3 < 5) == true)",
   ];
 
   const actual = [
@@ -156,6 +170,10 @@ test("test operator precedence parsing", () => {
     "5 > 4 == 3 < 4",
     "5 < 4 != 3 > 4",
     "3 + 4 * 5 == 3 * 1 + 4 * 5",
+    "true",
+    "true",
+    "3 > 5 == false",
+    "3 < 5 == true",
   ].map((input) => {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
