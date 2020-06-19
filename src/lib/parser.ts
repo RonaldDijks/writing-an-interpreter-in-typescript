@@ -33,6 +33,8 @@ export class Parser {
 
   private _prefixParseFunctions = new Map<TokenKind, PrefixParserFunction>([
     ["integer", this.parseIntegerLiteral.bind(this)],
+    ["true", this.parseBooleanLiteral.bind(this)],
+    ["false", this.parseBooleanLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
     ["bang", this.parsePrefixExpression.bind(this)],
     ["minus", this.parsePrefixExpression.bind(this)],
@@ -174,6 +176,10 @@ export class Parser {
       return undefined;
     }
     return ast.integerLiteral(value);
+  }
+
+  private parseBooleanLiteral(): ast.BooleanLiteral | undefined {
+    return ast.booleanLiteral(this._currentToken.kind === "true");
   }
 
   private parseExpression(precedence: Precedence): ast.Expression | undefined {

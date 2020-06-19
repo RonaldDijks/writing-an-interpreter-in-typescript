@@ -167,3 +167,24 @@ test("test operator precedence parsing", () => {
 
   expect(actual).toStrictEqual(expected);
 });
+
+test("test boolean expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(ast.booleanLiteral(true)),
+    ast.expressionStatement(ast.booleanLiteral(false)),
+    ast.letStatement(ast.identifier("foobar"), ast.booleanLiteral(true)),
+    ast.letStatement(ast.identifier("barfoo"), ast.booleanLiteral(false)),
+  ]);
+
+  const input = `
+    true;
+    false;
+    let foobar = true;
+    let barfoo = false;`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  expect(program).toStrictEqual(expected);
+});

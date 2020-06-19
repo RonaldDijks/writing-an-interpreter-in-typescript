@@ -67,6 +67,18 @@ export function integerLiteral(value: number): IntegerLiteral {
   };
 }
 
+export interface BooleanLiteral {
+  kind: "booleanLiteral";
+  value: boolean;
+}
+
+export function booleanLiteral(value: boolean): BooleanLiteral {
+  return {
+    kind: "booleanLiteral",
+    value,
+  };
+}
+
 export interface PrefixExpression {
   kind: "prefixExpression";
   operator: string;
@@ -107,6 +119,7 @@ export function infixExpression(
 export type Expression =
   | Identifier
   | IntegerLiteral
+  | BooleanLiteral
   | PrefixExpression
   | InfixExpression;
 
@@ -146,6 +159,8 @@ export function toString(node: Node | Program): string {
     case "identifier":
       return node.value;
     case "integerLiteral":
+      return `${node.value.toString()}`;
+    case "booleanLiteral":
       return `${node.value.toString()}`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
