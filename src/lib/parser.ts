@@ -39,6 +39,7 @@ export class Parser {
     ["bang", this.parsePrefixExpression.bind(this)],
     ["minus", this.parsePrefixExpression.bind(this)],
     ["leftParenthesis", this.parseGroupedExpression.bind(this)],
+    ["if", this.parseIfExpression.bind(this)],
   ]);
 
   private _infixParseFunctions = new Map<TokenKind, InfixParserFunction>([
@@ -228,5 +229,35 @@ export class Parser {
       return;
     }
     return expression;
+  }
+
+  private parseIfExpression(): ast.IfExpression | undefined {
+    if (!this.expectPeek("leftParenthesis")) return;
+    this.nextToken();
+    const condition = this.parseExpression(Precedence.Lowest);
+    if (!condition) return;
+    if (!this.expectPeek("rightParenthesis")) return;
+    if (!this.expectPeek("leftBrace")) return;
+    const consequence = this.parseBlockStatement();
+
+    if (!this.peekTokenIs("else")) {
+      return ast.ifExpression(condition, consequence);
+    }
+
+    this.nextToken();
+    if (!this.expectPeek("leftBrace")) return;
+    const alternative = this.parseBlockStatement();
+    return ast.ifExpression(condition, consequence, alternative);
+  }
+
+  private parseBlockStatement(): ast.Statement[] {
+    const statements: ast.Statement[] = [];
+    this.nextToken();
+    while (!this.currentTokenIs("rightBrace") && !this.currentTokenIs("eof")) {
+      const statement = this.parseStatement();
+      if (statement) statements.push(statement);
+      this.nextToken();
+    }
+    return statements;
   }
 }

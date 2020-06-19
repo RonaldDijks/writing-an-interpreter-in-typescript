@@ -4,7 +4,7 @@ import * as ast from "./ast";
 
 const checkParserErrors = (parser: Parser) => {
   if (parser.errors.length !== 0) {
-    let message = "The parser produces the following errors:\n\n";
+    let message = "The parser produced the following errors:\n\n";
     for (const error of parser.errors) {
       message += "ERROR: " + error + "\n";
     }
@@ -184,6 +184,45 @@ test("test boolean expression", () => {
     false;
     let foobar = true;
     let barfoo = false;`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  expect(program).toStrictEqual(expected);
+});
+
+test("test if expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.ifExpression(
+        ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
+        [ast.expressionStatement(ast.identifier("x"))]
+      )
+    ),
+  ]);
+
+  const input = `if (x < y) { x }`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+
+  expect(program).toStrictEqual(expected);
+});
+
+test("test if else expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.ifExpression(
+        ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
+        [ast.expressionStatement(ast.identifier("x"))],
+        [ast.expressionStatement(ast.identifier("y"))]
+      )
+    ),
+  ]);
+
+  const input = `if (x < y) { x } else { y }`;
   const lexer = new Lexer(input);
   const parser = new Parser(lexer);
   const program = parser.parseProgram();

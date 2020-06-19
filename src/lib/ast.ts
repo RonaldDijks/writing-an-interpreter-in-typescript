@@ -116,12 +116,33 @@ export function infixExpression(
   };
 }
 
+export interface IfExpression {
+  kind: "ifExpression";
+  condition: Expression;
+  consequence: Statement[];
+  alternative?: Statement[];
+}
+
+export function ifExpression(
+  condition: Expression,
+  consequence: Statement[],
+  alternative?: Statement[]
+): IfExpression {
+  return {
+    kind: "ifExpression",
+    condition,
+    consequence,
+    alternative,
+  };
+}
+
 export type Expression =
   | Identifier
   | IntegerLiteral
   | BooleanLiteral
   | PrefixExpression
-  | InfixExpression;
+  | InfixExpression
+  | IfExpression;
 
 export type Node = Statement | Expression;
 
@@ -164,7 +185,7 @@ export function toString(node: Node | Program): string {
       return `${node.value.toString()}`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
-    case "infixExpression":
+    case "infixExpression": {
       let result = "";
       result += "(";
       result += toString(node.left);
@@ -174,7 +195,22 @@ export function toString(node: Node | Program): string {
       result += toString(node.right);
       result += ")";
       return result;
+    }
     case "program":
       return node.statements.map(toString).join("");
+    case "ifExpression": {
+      let result = "";
+      result += "if (";
+      result += toString(node.condition);
+      result += ") { ";
+      result += node.consequence.map(toString).join("");
+      result += "}";
+      if (node.alternative) {
+        result += " else {";
+        result += node.alternative?.map(toString).join("");
+        result += "}";
+      }
+      return result;
+    }
   }
 }
