@@ -1,5 +1,7 @@
 import readline from "readline";
-import { lex } from "../lib/lexer";
+import { Lexer } from "../lib/lexer";
+import { Parser } from "../lib/parser";
+import * as ast from "./../lib/ast";
 
 export const start = () => {
   const rl = readline.createInterface({
@@ -11,15 +13,11 @@ export const start = () => {
   rl.prompt();
 
   rl.on("line", (input) => {
-    const tokens = lex(input);
-    for (const token of tokens) {
-      const text = (token as any).text || undefined;
-      if (text) {
-        console.log(token.kind, (token as any).text);
-      } else {
-        console.log(token.kind);
-      }
-    }
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    console.log(parser.errors);
+    console.log(program && ast.toString(program));
     rl.prompt();
   });
 };
