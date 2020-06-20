@@ -12,6 +12,8 @@ export function evaluate(node: ast.Node): obj.Object | undefined {
     // Expressions
     case "integerLiteral":
       return obj.integer(node.value);
+    case "booleanLiteral":
+      return obj.boolean(node.value);
 
     default:
       throw new Error(`unexpected node: '${node.kind}'`);

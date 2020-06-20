@@ -10,16 +10,16 @@ export interface Boolean {
   value: boolean;
 }
 
-export const boolean = (value: boolean): Boolean => ({
-  kind: "boolean",
-  value,
-});
+export const TRUE: Readonly<Boolean> = { kind: "boolean", value: true };
+export const FALSE: Readonly<Boolean> = { kind: "boolean", value: false };
+
+export const boolean = (value: boolean) => (value ? TRUE : FALSE);
 
 export interface Null {
   kind: "null";
 }
 
-export const Null = (): Null => ({ kind: "null" });
+export const NULL: Readonly<Null> = { kind: "null" };
 
 export type Object = Integer | Boolean | Null;
 

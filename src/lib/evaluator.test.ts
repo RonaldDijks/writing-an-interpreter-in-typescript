@@ -18,3 +18,19 @@ test("test eval integer expression", () => {
     expect(object).toStrictEqual(expected);
   }
 });
+
+test("test eval bool expression", () => {
+  const tests: [string, boolean][] = [
+    ["true", true],
+    ["false", false],
+  ];
+
+  for (const [input, value] of tests) {
+    const expected = obj.boolean(value);
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    const object = evaluate(program!);
+    expect(object).toStrictEqual(expected);
+  }
+});
