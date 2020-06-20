@@ -3,34 +3,29 @@ import { Parser } from "./parser";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
 
-test("test eval integer expression", () => {
-  const tests: [string, number][] = [
-    ["5", 5],
-    ["10", 10],
-  ];
+function testEval(input: string): obj.Object | undefined {
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  if (!program) throw new Error("could not parse: " + input);
+  const object = evaluate(program);
+  return object;
+}
 
-  for (const [input, value] of tests) {
-    const expected = obj.integer(value);
-    const lexer = new Lexer(input);
-    const parser = new Parser(lexer);
-    const program = parser.parseProgram();
-    const object = evaluate(program!);
-    expect(object).toStrictEqual(expected);
-  }
+test("test eval integer expression", () => {
+  const actual = ["5", "10", "-5", "-10"].map(testEval);
+  const expected = [5, 10, -5, -10].map(obj.integer);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test bang expression", () => {
+  const a = ["!true", "!false", "!5", "!!true", "!!false", "!!5"].map(testEval);
+  const expected = [false, true, false, true, false, true].map(obj.boolean);
+  expect(a).toStrictEqual(expected);
 });
 
 test("test eval bool expression", () => {
-  const tests: [string, boolean][] = [
-    ["true", true],
-    ["false", false],
-  ];
-
-  for (const [input, value] of tests) {
-    const expected = obj.boolean(value);
-    const lexer = new Lexer(input);
-    const parser = new Parser(lexer);
-    const program = parser.parseProgram();
-    const object = evaluate(program!);
-    expect(object).toStrictEqual(expected);
-  }
+  const actual = ["true", "false"].map(testEval);
+  const expected = [true, false].map(obj.boolean);
+  expect(actual).toStrictEqual(expected);
 });
