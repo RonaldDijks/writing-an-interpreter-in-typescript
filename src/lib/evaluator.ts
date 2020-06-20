@@ -14,13 +14,17 @@ export function evaluate(node: ast.Node): obj.Object {
       return obj.integer(node.value);
     case "booleanLiteral":
       return obj.boolean(node.value);
-    case "prefixExpression":
+    case "prefixExpression": {
       const right = evaluate(node.right);
       return evaluatePrefixExpression(node.operator, right);
-
-    default:
-      throw new Error(`unexpected node: '${node.kind}'`);
+    }
+    case "infixExpression": {
+      const left = evaluate(node.left);
+      const right = evaluate(node.right);
+      return evaluateInfixExpression(node.operator, left, right);
+    }
   }
+  throw new Error(`unexpected node: '${node.kind}'`);
 }
 
 export function evaluateStatements(statements: ast.Statement[]): obj.Object {
@@ -59,4 +63,43 @@ export function evaluateBangOperatorExpression(right: obj.Object): obj.Object {
 export function evaluateMinusOperatorExpression(right: obj.Object): obj.Object {
   if (right.kind !== "integer") return obj.NULL;
   return obj.integer(-right.value);
+}
+
+export function evaluateInfixExpression(
+  operator: string,
+  left: obj.Object,
+  right: obj.Object
+): obj.Object {
+  switch (operator) {
+    case "==":
+      return obj.boolean(obj.eq(left, right));
+    case "!=":
+      return obj.boolean(!obj.eq(left, right));
+  }
+
+  if (left.kind === "integer" && right.kind === "integer")
+    return evaluateIntegerInfixExpression(operator, left, right);
+  return obj.NULL;
+}
+
+export function evaluateIntegerInfixExpression(
+  operator: string,
+  left: obj.Integer,
+  right: obj.Integer
+): obj.Object {
+  switch (operator) {
+    case "+":
+      return obj.integer(left.value + right.value);
+    case "-":
+      return obj.integer(left.value - right.value);
+    case "*":
+      return obj.integer(left.value * right.value);
+    case "/":
+      return obj.integer(left.value / right.value);
+    case ">":
+      return obj.boolean(left.value > right.value);
+    case "<":
+      return obj.boolean(left.value < right.value);
+  }
+  return obj.NULL;
 }

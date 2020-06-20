@@ -33,3 +33,10 @@ export function toString(object: Object): string {
       return `null`;
   }
 }
+
+export function eq(a: Object, b: Object): boolean {
+  if (a.kind === "null" && b.kind === "null") return true;
+  if (a.kind === "null") return false;
+  if (b.kind === "null") return false;
+  return a.value === b.value;
+}
