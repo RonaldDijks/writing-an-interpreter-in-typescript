@@ -12,6 +12,6 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "jest"
+    "test": "tsc --noEmit && jest"
   }
 }

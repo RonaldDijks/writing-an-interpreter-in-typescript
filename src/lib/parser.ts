@@ -35,6 +35,7 @@ export class Parser {
     ["integer", this.parseIntegerLiteral.bind(this)],
     ["true", this.parseBooleanLiteral.bind(this)],
     ["false", this.parseBooleanLiteral.bind(this)],
+    ["function", this.parseFunctionLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
     ["bang", this.parsePrefixExpression.bind(this)],
     ["minus", this.parsePrefixExpression.bind(this)],
@@ -110,7 +111,7 @@ export class Parser {
       if (statement) statements.push(statement);
       this.nextToken();
     }
-    return ast.program(statements);
+    return ast.program(ast.blockStatement(statements));
   }
 
   private parseStatement(): ast.Statement | undefined {
@@ -184,6 +185,40 @@ export class Parser {
     return ast.booleanLiteral(this._currentToken.kind === "true");
   }
 
+  private parseFunctionLiteral(): ast.FunctionLiteral | undefined {
+    if (!this.expectPeek("leftParenthesis")) return;
+    const parameters = this.parseFunctionParameters();
+    if (!parameters) return;
+    if (!this.expectPeek("leftBrace")) return;
+    const body = this.parseBlockStatement();
+    return ast.functionLiteral(parameters, body);
+  }
+
+  private parseFunctionParameters(): ast.Identifier[] | undefined {
+    const identifiers: ast.Identifier[] = [];
+
+    if (this.peekTokenIs("rightParenthesis")) {
+      this.nextToken();
+      return identifiers;
+    }
+
+    this.nextToken();
+
+    identifiers.push(ast.identifier(this._currentToken.text));
+
+    while (this.peekTokenIs("comma")) {
+      this.nextToken();
+      this.nextToken();
+      identifiers.push(ast.identifier(this._currentToken.text));
+    }
+
+    if (!this.expectPeek("rightParenthesis")) {
+      return;
+    }
+
+    return identifiers;
+  }
+
   private parseExpression(precedence: Precedence): ast.Expression | undefined {
     const prefix = this._prefixParseFunctions.get(this._currentToken.kind);
     if (!prefix) {
@@ -250,7 +285,7 @@ export class Parser {
     return ast.ifExpression(condition, consequence, alternative);
   }
 
-  private parseBlockStatement(): ast.Statement[] {
+  private parseBlockStatement(): ast.BlockStatement {
     const statements: ast.Statement[] = [];
     this.nextToken();
     while (!this.currentTokenIs("rightBrace") && !this.currentTokenIs("eof")) {
@@ -258,6 +293,6 @@ export class Parser {
       if (statement) statements.push(statement);
       this.nextToken();
     }
-    return statements;
+    return ast.blockStatement(statements);
   }
 }

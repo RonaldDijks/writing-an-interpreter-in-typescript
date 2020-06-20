@@ -41,7 +41,23 @@ export function expressionStatement(
   };
 }
 
-export type Statement = LetStatement | ReturnStatement | ExpressionStatement;
+export type BlockStatement = {
+  kind: "blockStatement";
+  statements: Statement[];
+};
+
+export function blockStatement(statements: Statement[]): BlockStatement {
+  return {
+    kind: "blockStatement",
+    statements,
+  };
+}
+
+export type Statement =
+  | LetStatement
+  | ReturnStatement
+  | ExpressionStatement
+  | BlockStatement;
 
 export interface Identifier {
   kind: "identifier";
@@ -76,6 +92,23 @@ export function booleanLiteral(value: boolean): BooleanLiteral {
   return {
     kind: "booleanLiteral",
     value,
+  };
+}
+
+export interface FunctionLiteral {
+  kind: "functionLiteral";
+  parameters: Identifier[];
+  body: BlockStatement;
+}
+
+export function functionLiteral(
+  parameters: Identifier[],
+  body: BlockStatement
+): FunctionLiteral {
+  return {
+    kind: "functionLiteral",
+    parameters,
+    body,
   };
 }
 
@@ -119,14 +152,14 @@ export function infixExpression(
 export interface IfExpression {
   kind: "ifExpression";
   condition: Expression;
-  consequence: Statement[];
-  alternative?: Statement[];
+  consequence: BlockStatement;
+  alternative?: BlockStatement;
 }
 
 export function ifExpression(
   condition: Expression,
-  consequence: Statement[],
-  alternative?: Statement[]
+  consequence: BlockStatement,
+  alternative?: BlockStatement
 ): IfExpression {
   return {
     kind: "ifExpression",
@@ -140,6 +173,7 @@ export type Expression =
   | Identifier
   | IntegerLiteral
   | BooleanLiteral
+  | FunctionLiteral
   | PrefixExpression
   | InfixExpression
   | IfExpression;
@@ -148,32 +182,23 @@ export type Node = Statement | Expression;
 
 export interface Program {
   kind: "program";
-  statements: Statement[];
+  body: BlockStatement;
 }
 
-export function program(statements: Statement[]): Program {
-  return { kind: "program", statements };
+export function program(statements: BlockStatement): Program {
+  return { kind: "program", body: statements };
 }
 
 export function toString(node: Node | Program): string {
   switch (node.kind) {
     case "let": {
-      let result = "";
-      result += node.kind;
-      result += " ";
-      result += toString(node.name);
-      result += " = ";
-      result += toString(node.value);
-      result += ";";
-      return result;
+      const name = toString(node.name);
+      const value = toString(node.value);
+      return `let ${name} = ${value};`;
     }
     case "return": {
-      let result = "";
-      result += node.kind;
-      result += " ";
-      result += toString(node.returnValue);
-      result += ";";
-      return result;
+      const value = toString(node.returnValue);
+      return `return ${value};`;
     }
     case "expressionStatement":
       return `${toString(node.expression)}`;
@@ -186,31 +211,29 @@ export function toString(node: Node | Program): string {
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
     case "infixExpression": {
-      let result = "";
-      result += "(";
-      result += toString(node.left);
-      result += " ";
-      result += node.operator;
-      result += " ";
-      result += toString(node.right);
-      result += ")";
-      return result;
+      const left = toString(node.left);
+      const op = node.operator;
+      const right = toString(node.right);
+      return `(${left} ${op} ${right})`;
     }
     case "program":
-      return node.statements.map(toString).join("");
+      return toString(node.body);
     case "ifExpression": {
-      let result = "";
-      result += "if (";
-      result += toString(node.condition);
-      result += ") { ";
-      result += node.consequence.map(toString).join("");
-      result += "}";
-      if (node.alternative) {
-        result += " else {";
-        result += node.alternative?.map(toString).join("");
-        result += "}";
-      }
-      return result;
+      const cond = toString(node.condition);
+      const cons = toString(node.consequence);
+      const alt = node.alternative && toString(node.alternative);
+
+      return !alt
+        ? `if (${cond}) {${cons}}`
+        : `if (${cond}) {${cons}} else {${alt}}`;
+    }
+    case "functionLiteral": {
+      const parameters = node.parameters.map(toString).join(", ");
+      const body = toString(node.body);
+      return `fn(${parameters}) ${body}`;
+    }
+    case "blockStatement": {
+      return node.statements.map(toString).join("");
     }
   }
 }
