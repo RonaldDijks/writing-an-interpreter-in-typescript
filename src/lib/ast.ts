@@ -196,7 +196,7 @@ export type Expression =
   | IfExpression
   | CallExpression;
 
-export type Node = Statement | Expression;
+export type Node = Statement | Expression | Program;
 
 export interface Program {
   kind: "program";
@@ -207,7 +207,7 @@ export function program(statements: Statement[]): Program {
   return { kind: "program", body: statements };
 }
 
-export function toString(node: Node | Program): string {
+export function toString(node: Node): string {
   switch (node.kind) {
     case "let": {
       const name = toString(node.name);

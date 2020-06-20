@@ -3,14 +3,23 @@ export interface Integer {
   value: number;
 }
 
+export const integer = (value: number): Integer => ({ kind: "integer", value });
+
 export interface Boolean {
   kind: "boolean";
   value: boolean;
 }
 
+export const boolean = (value: boolean): Boolean => ({
+  kind: "boolean",
+  value,
+});
+
 export interface Null {
   kind: "null";
 }
+
+export const Null = (): Null => ({ kind: "null" });
 
 export type Object = Integer | Boolean | Null;
 
