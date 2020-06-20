@@ -182,10 +182,10 @@ export type Node = Statement | Expression;
 
 export interface Program {
   kind: "program";
-  body: BlockStatement;
+  body: Statement[];
 }
 
-export function program(statements: BlockStatement): Program {
+export function program(statements: Statement[]): Program {
   return { kind: "program", body: statements };
 }
 
@@ -217,7 +217,7 @@ export function toString(node: Node | Program): string {
       return `(${left} ${op} ${right})`;
     }
     case "program":
-      return toString(node.body);
+      return node.body.map(toString).join("");
     case "ifExpression": {
       const cond = toString(node.condition);
       const cons = toString(node.consequence);

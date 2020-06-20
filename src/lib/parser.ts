@@ -111,7 +111,7 @@ export class Parser {
       if (statement) statements.push(statement);
       this.nextToken();
     }
-    return ast.program(ast.blockStatement(statements));
+    return ast.program(statements);
   }
 
   private parseStatement(): ast.Statement | undefined {

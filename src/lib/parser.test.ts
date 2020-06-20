@@ -13,13 +13,11 @@ const checkParserErrors = (parser: Parser) => {
 };
 
 test("testLetStatement", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.letStatement(ast.identifier("x"), ast.integerLiteral(5)),
-      ast.letStatement(ast.identifier("y"), ast.integerLiteral(10)),
-      ast.letStatement(ast.identifier("foobar"), ast.integerLiteral(838383)),
-    ])
-  );
+  const expected = ast.program([
+    ast.letStatement(ast.identifier("x"), ast.integerLiteral(5)),
+    ast.letStatement(ast.identifier("y"), ast.integerLiteral(10)),
+    ast.letStatement(ast.identifier("foobar"), ast.integerLiteral(838383)),
+  ]);
 
   const input = `
     let x = 5;
@@ -35,13 +33,11 @@ test("testLetStatement", () => {
 });
 
 test("test return statement", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.returnStatement(ast.integerLiteral(5)),
-      ast.returnStatement(ast.integerLiteral(10)),
-      ast.returnStatement(ast.integerLiteral(993322)),
-    ])
-  );
+  const expected = ast.program([
+    ast.returnStatement(ast.integerLiteral(5)),
+    ast.returnStatement(ast.integerLiteral(10)),
+    ast.returnStatement(ast.integerLiteral(993322)),
+  ]);
 
   const input = `
     return 5;
@@ -57,9 +53,9 @@ test("test return statement", () => {
 });
 
 test("test identifier expression", () => {
-  const expected = ast.program(
-    ast.blockStatement([ast.expressionStatement(ast.identifier("foobar"))])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(ast.identifier("foobar")),
+  ]);
 
   const input = "foobar;";
   const lexer = new Lexer(input);
@@ -70,9 +66,9 @@ test("test identifier expression", () => {
 });
 
 test("test integer literal expression", () => {
-  const expected = ast.program(
-    ast.blockStatement([ast.expressionStatement(ast.integerLiteral(5))])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(ast.integerLiteral(5)),
+  ]);
 
   const input = "5;";
   const lexer = new Lexer(input);
@@ -84,34 +80,24 @@ test("test integer literal expression", () => {
 
 test("test parsing prefix expressions", () => {
   const expected = [
-    ast.program(
-      ast.blockStatement([
-        ast.expressionStatement(
-          ast.prefixExpression("!", ast.integerLiteral(5))
-        ),
-      ])
-    ),
-    ast.program(
-      ast.blockStatement([
-        ast.expressionStatement(
-          ast.prefixExpression("-", ast.integerLiteral(15))
-        ),
-      ])
-    ),
-    ast.program(
-      ast.blockStatement([
-        ast.expressionStatement(
-          ast.prefixExpression("!", ast.booleanLiteral(true))
-        ),
-      ])
-    ),
-    ast.program(
-      ast.blockStatement([
-        ast.expressionStatement(
-          ast.prefixExpression("!", ast.booleanLiteral(false))
-        ),
-      ])
-    ),
+    ast.program([
+      ast.expressionStatement(ast.prefixExpression("!", ast.integerLiteral(5))),
+    ]),
+    ast.program([
+      ast.expressionStatement(
+        ast.prefixExpression("-", ast.integerLiteral(15))
+      ),
+    ]),
+    ast.program([
+      ast.expressionStatement(
+        ast.prefixExpression("!", ast.booleanLiteral(true))
+      ),
+    ]),
+    ast.program([
+      ast.expressionStatement(
+        ast.prefixExpression("!", ast.booleanLiteral(false))
+      ),
+    ]),
   ];
 
   const actual = ["!5;", "-15;", "!true", "!false"].map((input) => {
@@ -129,17 +115,15 @@ test("test parsing infix expression", () => {
   const operators = ["+", "-", "*", "/", ">", "<", "==", "!="];
 
   const expected = operators.map((operator) => {
-    return ast.program(
-      ast.blockStatement([
-        ast.expressionStatement(
-          ast.infixExpression(
-            operator,
-            ast.integerLiteral(5),
-            ast.integerLiteral(5)
-          )
-        ),
-      ])
-    );
+    return ast.program([
+      ast.expressionStatement(
+        ast.infixExpression(
+          operator,
+          ast.integerLiteral(5),
+          ast.integerLiteral(5)
+        )
+      ),
+    ]);
   });
 
   const actual = operators.map((operator) => {
@@ -188,14 +172,12 @@ test("test operator precedence parsing", () => {
 });
 
 test("test boolean expression", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.expressionStatement(ast.booleanLiteral(true)),
-      ast.expressionStatement(ast.booleanLiteral(false)),
-      ast.letStatement(ast.identifier("foobar"), ast.booleanLiteral(true)),
-      ast.letStatement(ast.identifier("barfoo"), ast.booleanLiteral(false)),
-    ])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(ast.booleanLiteral(true)),
+    ast.expressionStatement(ast.booleanLiteral(false)),
+    ast.letStatement(ast.identifier("foobar"), ast.booleanLiteral(true)),
+    ast.letStatement(ast.identifier("barfoo"), ast.booleanLiteral(false)),
+  ]);
 
   const input = `
     true;
@@ -211,16 +193,14 @@ test("test boolean expression", () => {
 });
 
 test("test if expression", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.expressionStatement(
-        ast.ifExpression(
-          ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
-          ast.blockStatement([ast.expressionStatement(ast.identifier("x"))])
-        )
-      ),
-    ])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.ifExpression(
+        ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
+        ast.blockStatement([ast.expressionStatement(ast.identifier("x"))])
+      )
+    ),
+  ]);
 
   const input = `if (x < y) { x }`;
   const lexer = new Lexer(input);
@@ -232,17 +212,15 @@ test("test if expression", () => {
 });
 
 test("test if else expression", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.expressionStatement(
-        ast.ifExpression(
-          ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
-          ast.blockStatement([ast.expressionStatement(ast.identifier("x"))]),
-          ast.blockStatement([ast.expressionStatement(ast.identifier("y"))])
-        )
-      ),
-    ])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.ifExpression(
+        ast.infixExpression("<", ast.identifier("x"), ast.identifier("y")),
+        ast.blockStatement([ast.expressionStatement(ast.identifier("x"))]),
+        ast.blockStatement([ast.expressionStatement(ast.identifier("y"))])
+      )
+    ),
+  ]);
 
   const input = `if (x < y) { x } else { y }`;
   const lexer = new Lexer(input);
@@ -254,20 +232,18 @@ test("test if else expression", () => {
 });
 
 test("test function literal", () => {
-  const expected = ast.program(
-    ast.blockStatement([
-      ast.expressionStatement(
-        ast.functionLiteral(
-          [ast.identifier("x"), ast.identifier("y")],
-          ast.blockStatement([
-            ast.expressionStatement(
-              ast.infixExpression("+", ast.identifier("x"), ast.identifier("y"))
-            ),
-          ])
-        )
-      ),
-    ])
-  );
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.functionLiteral(
+        [ast.identifier("x"), ast.identifier("y")],
+        ast.blockStatement([
+          ast.expressionStatement(
+            ast.infixExpression("+", ast.identifier("x"), ast.identifier("y"))
+          ),
+        ])
+      )
+    ),
+  ]);
 
   const input = `fn(x, y) { x + y; }`;
   const lexer = new Lexer(input);
@@ -289,7 +265,7 @@ test("test function parameter parsing", () => {
   const program = parser.parseProgram();
   checkParserErrors(parser);
 
-  const stmt = program?.body.statements as ast.ExpressionStatement[];
+  const stmt = program?.body as ast.ExpressionStatement[];
   const lits = stmt.map((e) => e.expression) as ast.FunctionLiteral[];
   const params = lits.map((f) => f.parameters.map((p) => p.value));
   expect(params).toStrictEqual(expected);
