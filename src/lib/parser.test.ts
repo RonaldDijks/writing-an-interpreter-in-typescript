@@ -270,3 +270,22 @@ test("test function parameter parsing", () => {
   const params = lits.map((f) => f.parameters.map((p) => p.value));
   expect(params).toStrictEqual(expected);
 });
+
+test("test call expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.callExpression(ast.identifier("add"), [
+        ast.integerLiteral(1),
+        ast.infixExpression("*", ast.integerLiteral(2), ast.integerLiteral(3)),
+        ast.infixExpression("+", ast.integerLiteral(4), ast.integerLiteral(5)),
+      ])
+    ),
+  ]);
+
+  const input = `add(1, 2 * 3, 4 + 5);`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  expect(program).toStrictEqual(expected);
+});

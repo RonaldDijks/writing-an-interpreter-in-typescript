@@ -24,6 +24,7 @@ const precedences = new Map<TokenKind, number>([
   ["minus", Precedence.Sum],
   ["slash", Precedence.Product],
   ["asterisk", Precedence.Product],
+  ["leftParenthesis", Precedence.Call],
 ]);
 
 export class Parser {
@@ -52,6 +53,7 @@ export class Parser {
     ["notEquals", this.parseInfixExpression.bind(this)],
     ["lessThen", this.parseInfixExpression.bind(this)],
     ["greaterThen", this.parseInfixExpression.bind(this)],
+    ["leftParenthesis", this.parseCallExpression.bind(this)],
   ]);
 
   public errors: string[];
@@ -255,6 +257,39 @@ export class Parser {
     const right = this.parseExpression(precedence);
     if (!right) return;
     return ast.infixExpression(operator, left, right);
+  }
+
+  private parseCallExpression(
+    left: ast.Expression
+  ): ast.CallExpression | undefined {
+    const args = this.parseCallArugments();
+    if (left.kind === "identifier" || left.kind == "functionLiteral") {
+      if (!args) return;
+      return ast.callExpression(left, args);
+    }
+  }
+
+  parseCallArugments(): ast.Expression[] | undefined {
+    const args: ast.Expression[] = [];
+    if (this.peekTokenIs("rightParenthesis")) {
+      this.nextToken();
+      return args;
+    }
+
+    this.nextToken();
+    const arg = this.parseExpression(Precedence.Lowest);
+    if (!arg) return;
+    args.push(arg);
+
+    while (this.peekTokenIs("comma")) {
+      this.nextToken();
+      this.nextToken();
+      const arg = this.parseExpression(Precedence.Lowest);
+      if (arg) args.push(arg);
+    }
+
+    if (!this.expectPeek("rightParenthesis")) return;
+    return args;
   }
 
   private parseGroupedExpression(): ast.Expression | undefined {

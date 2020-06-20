@@ -169,6 +169,23 @@ export function ifExpression(
   };
 }
 
+export interface CallExpression {
+  kind: "callExpression";
+  func: Identifier | FunctionLiteral;
+  args: Expression[];
+}
+
+export function callExpression(
+  func: Identifier | FunctionLiteral,
+  args: Expression[]
+): CallExpression {
+  return {
+    kind: "callExpression",
+    func,
+    args,
+  };
+}
+
 export type Expression =
   | Identifier
   | IntegerLiteral
@@ -176,7 +193,8 @@ export type Expression =
   | FunctionLiteral
   | PrefixExpression
   | InfixExpression
-  | IfExpression;
+  | IfExpression
+  | CallExpression;
 
 export type Node = Statement | Expression;
 
@@ -215,6 +233,11 @@ export function toString(node: Node | Program): string {
       const op = node.operator;
       const right = toString(node.right);
       return `(${left} ${op} ${right})`;
+    }
+    case "callExpression": {
+      const func = toString(node.func);
+      const args = node.args.map(toString).join(", ");
+      return `${func}(${args})`;
     }
     case "program":
       return node.body.map(toString).join("");
