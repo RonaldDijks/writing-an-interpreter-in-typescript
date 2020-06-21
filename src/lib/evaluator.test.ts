@@ -77,3 +77,18 @@ test("test eval boolean expression", () => {
   const expected = tests.map(snd).map(obj.boolean);
   expect(actual).toStrictEqual(expected);
 });
+
+test("test eval if else expressions", () => {
+  const tests: [string, obj.Object][] = [
+    ["if (true) { 10 }", obj.integer(10)],
+    ["if (false) { 10 }", obj.NULL],
+    ["if (1) { 10 }", obj.integer(10)],
+    ["if (1 < 2) { 10 }", obj.integer(10)],
+    ["if (1 > 2) { 10 }", obj.NULL],
+    ["if (1 > 2) { 10 } else { 20 }", obj.integer(20)],
+    ["if (1 < 2) { 10 } else { 20 }", obj.integer(10)],
+  ];
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd);
+  expect(actual).toStrictEqual(expected);
+});

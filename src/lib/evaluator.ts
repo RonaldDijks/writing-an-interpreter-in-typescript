@@ -8,6 +8,8 @@ export function evaluate(node: ast.Node): obj.Object {
       return evaluateStatements(node.body);
     case "expressionStatement":
       return evaluate(node.expression);
+    case "blockStatement":
+      return evaluateStatements(node.statements);
 
     // Expressions
     case "integerLiteral":
@@ -23,6 +25,8 @@ export function evaluate(node: ast.Node): obj.Object {
       const right = evaluate(node.right);
       return evaluateInfixExpression(node.operator, left, right);
     }
+    case "ifExpression":
+      return evaluateIfExpression(node);
   }
   throw new Error(`unexpected node: '${node.kind}'`);
 }
@@ -101,5 +105,17 @@ export function evaluateIntegerInfixExpression(
     case "<":
       return obj.boolean(left.value < right.value);
   }
+  return obj.NULL;
+}
+
+export function evaluateIfExpression(node: ast.IfExpression): obj.Object {
+  const condition = evaluate(node.condition);
+
+  if (obj.isTruthy(condition)) {
+    return evaluate(node.consequence);
+  } else if (node.alternative) {
+    return evaluate(node.alternative);
+  }
+
   return obj.NULL;
 }

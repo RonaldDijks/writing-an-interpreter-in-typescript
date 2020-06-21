@@ -40,3 +40,14 @@ export function eq(a: Object, b: Object): boolean {
   if (b.kind === "null") return false;
   return a.value === b.value;
 }
+
+export function isTruthy(a: Object): boolean {
+  switch (a.kind) {
+    case "null":
+      return false;
+    case "boolean":
+      return a.value;
+    case "integer":
+      return true;
+  }
+}
