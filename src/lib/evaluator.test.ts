@@ -2,6 +2,7 @@ import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
+import * as env from "./environment";
 
 function fst<A, B>(tuple: [A, B]): A {
   return tuple[0];
@@ -20,7 +21,7 @@ function testEval(input: string): obj.Object | undefined {
   }
   const program = parser.parseProgram();
   if (!program) throw new Error("could not parse: " + input);
-  const object = evaluate(program);
+  const object = evaluate(program, new env.Environment());
   return object;
 }
 
@@ -122,6 +123,7 @@ test("test return statement", () => {
 
 test("test error handling", () => {
   const tests: [string, string][] = [
+    ["foobar", "identifier not found: foobar"],
     ["5 + true;", "type mismatch: integer + boolean"],
     ["5 + true; 5;", "type mismatch: integer + boolean"],
     ["-true;", "unknown operator: -boolean"],
@@ -143,5 +145,18 @@ test("test error handling", () => {
 
   const actual = tests.map(fst).map(testEval);
   const expected = tests.map(snd).map(obj.error);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test let statements", () => {
+  const tests: [string, number][] = [
+    ["let a = 5; a;", 5],
+    ["let a = 5 * 5; a;", 25],
+    ["let a = 5; let b = a; b;", 5],
+    ["let a = 5; let b = a; let c = a + b + 5; c;", 15],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd).map(obj.integer);
   expect(actual).toStrictEqual(expected);
 });

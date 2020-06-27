@@ -57,9 +57,9 @@ export type Object = Integer | Boolean | Null | Error | ReturnValue;
 export function toString(object: Object): string {
   switch (object.kind) {
     case "boolean":
-      return `${object.value}`;
+      return `${object.value} : boolean`;
     case "integer":
-      return `${object.value}`;
+      return `${object.value} : integer`;
     case "null":
       return `null`;
     case "error":

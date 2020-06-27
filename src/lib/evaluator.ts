@@ -1,15 +1,19 @@
 import * as ast from "./ast";
 import * as obj from "./object";
+import * as env from "./environment";
 
-export function evaluate(node: ast.Node): obj.Object {
+export function evaluate(
+  node: ast.Node,
+  environment: env.Environment
+): obj.Object {
   switch (node.kind) {
     // Statements
     case "program":
-      return evaluateProgram(node);
+      return evaluateProgram(node, environment);
     case "blockStatement":
-      return evaluateBlockStatement(node);
+      return evaluateBlockStatement(node, environment);
     case "expressionStatement":
-      return evaluate(node.expression);
+      return evaluate(node.expression, environment);
 
     // Expressions
     case "integerLiteral":
@@ -17,32 +21,54 @@ export function evaluate(node: ast.Node): obj.Object {
     case "booleanLiteral":
       return obj.boolean(node.value);
     case "prefixExpression": {
-      const right = evaluate(node.right);
+      const right = evaluate(node.right, environment);
       if (obj.isError(right)) return right;
       return evaluatePrefixExpression(node.operator, right);
     }
     case "infixExpression": {
-      const left = evaluate(node.left);
+      const left = evaluate(node.left, environment);
       if (obj.isError(left)) return left;
-      const right = evaluate(node.right);
+      const right = evaluate(node.right, environment);
       if (obj.isError(right)) return left;
       return evaluateInfixExpression(node.operator, left, right);
     }
     case "ifExpression":
-      return evaluateIfExpression(node);
+      return evaluateIfExpression(node, environment);
     case "returnStatement": {
-      const value = evaluate(node.returnValue);
+      const value = evaluate(node.returnValue, environment);
       if (obj.isError(value)) return value;
       return obj.returnValue(value);
     }
+    case "let": {
+      const value = evaluate(node.value, environment);
+      if (obj.isError(value)) return value;
+      environment.set(node.name.value, value);
+      return value;
+    }
+    case "identifier": {
+      return evaluateIdentifier(node, environment);
+    }
+    default:
+      throw new Error(`unexpected node: '${node.kind}'`);
   }
-  throw new Error(`unexpected node: '${node.kind}'`);
 }
 
-export function evaluateProgram(program: ast.Program): obj.Object {
+export function evaluateIdentifier(
+  node: ast.Identifier,
+  env: env.Environment
+): obj.Object {
+  const value = env.get(node.value);
+  if (!value) return obj.error(`identifier not found: ${node.value}`);
+  return value;
+}
+
+export function evaluateProgram(
+  program: ast.Program,
+  environment: env.Environment
+): obj.Object {
   let result!: obj.Object;
   for (const statement of program.body) {
-    result = evaluate(statement);
+    result = evaluate(statement, environment);
 
     if (result.kind === "returnValue") {
       return result.value;
@@ -53,10 +79,13 @@ export function evaluateProgram(program: ast.Program): obj.Object {
   return result;
 }
 
-export function evaluateBlockStatement(node: ast.BlockStatement): obj.Object {
+export function evaluateBlockStatement(
+  node: ast.BlockStatement,
+  environment: env.Environment
+): obj.Object {
   let result!: obj.Object;
   for (const statement of node.statements) {
-    result = evaluate(statement);
+    result = evaluate(statement, environment);
 
     if (result.kind === "returnValue" || result.kind === "error") {
       return result;
@@ -144,13 +173,16 @@ export function evaluateIntegerInfixExpression(
   }
 }
 
-export function evaluateIfExpression(node: ast.IfExpression): obj.Object {
-  const condition = evaluate(node.condition);
+export function evaluateIfExpression(
+  node: ast.IfExpression,
+  environment: env.Environment
+): obj.Object {
+  const condition = evaluate(node.condition, environment);
   if (obj.isError(condition)) return condition;
   if (obj.isTruthy(condition)) {
-    return evaluate(node.consequence);
+    return evaluate(node.consequence, environment);
   } else if (node.alternative) {
-    return evaluate(node.alternative);
+    return evaluate(node.alternative, environment);
   }
 
   return obj.NULL;
