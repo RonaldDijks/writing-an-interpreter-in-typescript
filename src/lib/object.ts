@@ -34,7 +34,25 @@ export const returnValue = (value: Object): ReturnValue => {
   };
 };
 
-export type Object = Integer | Boolean | Null | ReturnValue;
+export interface Error {
+  kind: "error";
+  value: string;
+}
+
+export const error = (value: string): Error => ({
+  kind: "error",
+  value,
+});
+
+export const isError = (value: unknown): value is Error => {
+  if ((value as Error).kind === "error") {
+    return true;
+  }
+
+  return false;
+};
+
+export type Object = Integer | Boolean | Null | Error | ReturnValue;
 
 export function toString(object: Object): string {
   switch (object.kind) {
@@ -44,6 +62,8 @@ export function toString(object: Object): string {
       return `${object.value}`;
     case "null":
       return `null`;
+    case "error":
+      return `ERROR: ${object.value}`;
     case "returnValue":
       return toString(object);
   }

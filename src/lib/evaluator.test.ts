@@ -14,6 +14,10 @@ function snd<A, B>(tuple: [A, B]): B {
 function testEval(input: string): obj.Object | undefined {
   const lexer = new Lexer(input);
   const parser = new Parser(lexer);
+  if (parser.errors.length !== 0) {
+    parser.errors.forEach(console.log);
+    return;
+  }
   const program = parser.parseProgram();
   if (!program) throw new Error("could not parse: " + input);
   const object = evaluate(program);
@@ -113,5 +117,31 @@ test("test return statement", () => {
 
   const actual = tests.map(fst).map(testEval);
   const expected = tests.map(snd).map(obj.integer);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test error handling", () => {
+  const tests: [string, string][] = [
+    ["5 + true;", "type mismatch: integer + boolean"],
+    ["5 + true; 5;", "type mismatch: integer + boolean"],
+    ["-true;", "unknown operator: -boolean"],
+    ["true + false;", "unknown operator: boolean + boolean"],
+    ["5; true + false; 5", "unknown operator: boolean + boolean"],
+    ["if (10 > 1) { true + false; }", "unknown operator: boolean + boolean"],
+    [
+      `
+    if (10 > 1) {
+      if (10 > 1) {
+        return true + false;
+      }
+      return 1;
+    }
+    `,
+      "unknown operator: boolean + boolean",
+    ],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd).map(obj.error);
   expect(actual).toStrictEqual(expected);
 });
