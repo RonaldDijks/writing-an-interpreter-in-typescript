@@ -21,7 +21,19 @@ export interface Null {
 
 export const NULL: Readonly<Null> = { kind: "null" };
 
-export type Object = Integer | Boolean | Null;
+export interface ReturnValue {
+  kind: "returnValue";
+  value: Object;
+}
+
+export const returnValue = (value: Object): ReturnValue => {
+  return {
+    kind: 'returnValue',
+    value
+  }
+}
+
+export type Object = Integer | Boolean | Null | ReturnValue;
 
 export function toString(object: Object): string {
   switch (object.kind) {
@@ -31,6 +43,8 @@ export function toString(object: Object): string {
       return `${object.value}`;
     case "null":
       return `null`;
+    case "returnValue":
+      return toString(object);
   }
 }
 
@@ -50,4 +64,5 @@ export function isTruthy(a: Object): boolean {
     case "integer":
       return true;
   }
+  return true;
 }

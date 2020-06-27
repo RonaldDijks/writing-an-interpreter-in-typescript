@@ -16,13 +16,13 @@ export function letStatement(
 }
 
 export interface ReturnStatement {
-  kind: "return";
+  kind: "returnStatement";
   returnValue: Expression;
 }
 
 export function returnStatement(returnValue: Expression): ReturnStatement {
   return {
-    kind: "return",
+    kind: "returnStatement",
     returnValue,
   };
 }
@@ -214,7 +214,7 @@ export function toString(node: Node): string {
       const value = toString(node.value);
       return `let ${name} = ${value};`;
     }
-    case "return": {
+    case "returnStatement": {
       const value = toString(node.returnValue);
       return `return ${value};`;
     }

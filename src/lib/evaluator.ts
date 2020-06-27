@@ -5,11 +5,11 @@ export function evaluate(node: ast.Node): obj.Object {
   switch (node.kind) {
     // Statements
     case "program":
-      return evaluateStatements(node.body);
+      return evaluateProgram(node);
+    case "blockStatement":
+      return evaluateBlockStatement(node);
     case "expressionStatement":
       return evaluate(node.expression);
-    case "blockStatement":
-      return evaluateStatements(node.statements);
 
     // Expressions
     case "integerLiteral":
@@ -27,14 +27,46 @@ export function evaluate(node: ast.Node): obj.Object {
     }
     case "ifExpression":
       return evaluateIfExpression(node);
+    case "returnStatement": {
+      const value = evaluate(node.returnValue);
+      return obj.returnValue(value);
+    }
   }
   throw new Error(`unexpected node: '${node.kind}'`);
+}
+
+export function evaluateProgram(program: ast.Program): obj.Object {
+  let result!: obj.Object;
+  for (const statement of program.body) {
+    result = evaluate(statement);
+
+    if (result.kind === "returnValue") {
+      return result.value
+    }
+  }
+  return result;
+}
+
+export function evaluateBlockStatement(node: ast.BlockStatement): obj.Object {
+  let result!: obj.Object;
+  for (const statement of node.statements) {
+    result = evaluate(statement);
+
+    if (result.kind === "returnValue") {
+      return result;
+    }
+  }
+  return result;
 }
 
 export function evaluateStatements(statements: ast.Statement[]): obj.Object {
   let result: obj.Object | undefined = undefined;
   for (const statement of statements) {
     result = evaluate(statement);
+
+    if (result.kind === "returnValue") {
+      return result.value
+    }
   }
   if (!result) throw new Error("no returnValue");
   return result;

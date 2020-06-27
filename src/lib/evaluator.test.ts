@@ -92,3 +92,26 @@ test("test eval if else expressions", () => {
   const expected = tests.map(snd);
   expect(actual).toStrictEqual(expected);
 });
+
+const nestedReturnStatements = `
+  if (10 > 1) {
+    if (10 > 1) {
+      return 10;
+    }
+    return 1;
+  }
+`;
+
+test('test return statement', () => {
+  const tests: [string, number][] = [
+    ["return 10;", 10],
+    ["return 10; 9;", 10],
+    ["return 2 * 5; 9;", 10],
+    ["9; return 2 * 5; 9;", 10],
+    [nestedReturnStatements, 10]
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd).map(obj.integer);
+  expect(actual).toStrictEqual(expected);
+});
