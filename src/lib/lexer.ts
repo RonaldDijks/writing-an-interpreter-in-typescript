@@ -14,7 +14,7 @@ export class Lexer {
     this.readChar();
   }
 
-  public readChar() {
+  public readChar(): void {
     if (this._position >= this._input.length) {
       this._current = "\0";
     } else {
@@ -107,10 +107,10 @@ export class Lexer {
       }
     }
     this.readChar();
-    return token!;
+    return token;
   }
 
-  skipWhitespace() {
+  skipWhitespace(): void {
     while (isWhitespace(this._current)) {
       this.readChar();
     }

@@ -41,7 +41,7 @@ export function evaluateProgram(program: ast.Program): obj.Object {
     result = evaluate(statement);
 
     if (result.kind === "returnValue") {
-      return result.value
+      return result.value;
     }
   }
   return result;
@@ -65,7 +65,7 @@ export function evaluateStatements(statements: ast.Statement[]): obj.Object {
     result = evaluate(statement);
 
     if (result.kind === "returnValue") {
-      return result.value
+      return result.value;
     }
   }
   if (!result) throw new Error("no returnValue");

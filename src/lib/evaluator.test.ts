@@ -3,12 +3,12 @@ import { Parser } from "./parser";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
 
-function fst<A, B>([a, b]: [A, B]): A {
-  return a;
+function fst<A, B>(tuple: [A, B]): A {
+  return tuple[0];
 }
 
-function snd<A, B>([a, b]: [A, B]): B {
-  return b;
+function snd<A, B>(tuple: [A, B]): B {
+  return tuple[1];
 }
 
 function testEval(input: string): obj.Object | undefined {
@@ -102,13 +102,13 @@ const nestedReturnStatements = `
   }
 `;
 
-test('test return statement', () => {
+test("test return statement", () => {
   const tests: [string, number][] = [
     ["return 10;", 10],
     ["return 10; 9;", 10],
     ["return 2 * 5; 9;", 10],
     ["9; return 2 * 5; 9;", 10],
-    [nestedReturnStatements, 10]
+    [nestedReturnStatements, 10],
   ];
 
   const actual = tests.map(fst).map(testEval);

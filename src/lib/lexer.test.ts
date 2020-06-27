@@ -1,5 +1,5 @@
 import { Token } from "./token";
-import { Lexer, lex } from "./lexer";
+import { lex } from "./lexer";
 
 test("testNextToken", () => {
   const input = `

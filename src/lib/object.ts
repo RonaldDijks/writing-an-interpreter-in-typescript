@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 export interface Integer {
   kind: "integer";
   value: number;
@@ -13,7 +14,7 @@ export interface Boolean {
 export const TRUE: Readonly<Boolean> = { kind: "boolean", value: true };
 export const FALSE: Readonly<Boolean> = { kind: "boolean", value: false };
 
-export const boolean = (value: boolean) => (value ? TRUE : FALSE);
+export const boolean = (value: boolean): Boolean => (value ? TRUE : FALSE);
 
 export interface Null {
   kind: "null";
@@ -28,10 +29,10 @@ export interface ReturnValue {
 
 export const returnValue = (value: Object): ReturnValue => {
   return {
-    kind: 'returnValue',
-    value
-  }
-}
+    kind: "returnValue",
+    value,
+  };
+};
 
 export type Object = Integer | Boolean | Null | ReturnValue;
 

@@ -61,7 +61,9 @@ export class Parser {
   public constructor(lexer: Lexer) {
     this._lexer = lexer;
     this.errors = [];
-    this._currentToken = lexer.nextToken()!;
+    const firstToken = lexer.nextToken();
+    if (!firstToken) throw new Error("");
+    this._currentToken = firstToken;
     this._peekToken = lexer.nextToken();
   }
 
@@ -142,11 +144,13 @@ export class Parser {
 
     const expr = this.parseExpression(Precedence.Lowest);
 
+    if (!expr) throw new Error("Expected new expression");
+
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
 
-    return ast.letStatement(name, expr!);
+    return ast.letStatement(name, expr);
   }
 
   private parseReturnStatement(): ast.ReturnStatement | undefined {
@@ -154,11 +158,15 @@ export class Parser {
 
     const expression = this.parseExpression(Precedence.Lowest);
 
+    if (!expression) {
+      throw new Error("Expected expression");
+    }
+
     while (!this.currentTokenIs("semicolon")) {
       this.nextToken();
     }
 
-    return ast.returnStatement(expression!);
+    return ast.returnStatement(expression);
   }
 
   private parseExpressionStatement(): ast.ExpressionStatement | undefined {
@@ -227,14 +235,18 @@ export class Parser {
       this.errors.push(`no prefix parse fn for ${this._currentToken.kind}`);
       return;
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let leftExpr = prefix()!;
     while (
       !this.peekTokenIs("semicolon") &&
       precedence < this.peekPrecedence()
     ) {
-      const infix = this._infixParseFunctions.get(this._peekToken?.kind!);
+      const peekKind = this._peekToken?.kind;
+      if (!peekKind) throw new Error("PeekKind cannot be null.");
+      const infix = this._infixParseFunctions.get(peekKind);
       if (!infix) return leftExpr;
       this.nextToken();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       leftExpr = infix(leftExpr)!;
     }
     return leftExpr;
