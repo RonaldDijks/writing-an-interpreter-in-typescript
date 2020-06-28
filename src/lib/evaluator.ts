@@ -48,9 +48,70 @@ export function evaluate(
     case "identifier": {
       return evaluateIdentifier(node, environment);
     }
+    case "functionLiteral": {
+      return obj.func(node.parameters, node.body, environment);
+    }
+    case "callExpression": {
+      const func = evaluate(node.func, environment);
+      if (obj.isError(func)) return func;
+      const args = evaluateExpressions(node.args, environment);
+      if (args.length == 1 && obj.isError(args[0])) {
+        return args[0];
+      }
+      return applyFunction(func, args);
+    }
     default:
-      throw new Error(`unexpected node: '${node.kind}'`);
+      throw new Error(`unexpected node: '${node}'`);
   }
+}
+
+export function applyFunction(
+  func: obj.Object,
+  args: obj.Object[]
+): obj.Object {
+  if (func.kind !== "func") {
+    return obj.error("not a function: " + func.kind);
+  }
+  const extendedEnvironment = extendFunctionEnvironment(func, args);
+  const evaluated = evaluate(func.body, extendedEnvironment);
+  return unwrapReturnValue(evaluated);
+}
+
+export function extendFunctionEnvironment(
+  func: obj.Func,
+  args: obj.Object[]
+): env.Environment {
+  const environment = new env.Environment(func.env);
+  for (let p = 0; p < func.parameters.length; p++) {
+    const { value } = func.parameters[p];
+    const arg = args[p];
+    environment.set(value, arg);
+  }
+  return environment;
+}
+
+export function unwrapReturnValue(returnValue: obj.Object): obj.Object {
+  if (returnValue.kind === "returnValue") {
+    return returnValue.value;
+  }
+  return returnValue;
+}
+
+export function evaluateExpressions(
+  expressions: ast.Expression[],
+  environment: env.Environment
+): obj.Object[] {
+  const result: obj.Object[] = [];
+
+  for (const expression of expressions) {
+    const evaluated = evaluate(expression, environment);
+    if (obj.isError(evaluated)) {
+      return [evaluated];
+    }
+    result.push(evaluated);
+  }
+
+  return result;
 }
 
 export function evaluateIdentifier(

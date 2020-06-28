@@ -3,6 +3,7 @@ import { Parser } from "./parser";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
 import * as env from "./environment";
+import * as ast from "./ast";
 
 function fst<A, B>(tuple: [A, B]): A {
   return tuple[0];
@@ -158,5 +159,48 @@ test("test let statements", () => {
 
   const actual = tests.map(fst).map(testEval);
   const expected = tests.map(snd).map(obj.integer);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test function object", () => {
+  const test = `fn(x) { x + 2 }`;
+  const actual = testEval(test);
+  if (actual?.kind !== "func") throw new Error("expected func");
+  const expected = obj.func(
+    [{ kind: "identifier", value: "x" }],
+    ast.blockStatement([
+      ast.expressionStatement(
+        ast.infixExpression("+", ast.identifier("x"), ast.integerLiteral(2))
+      ),
+    ]),
+    new env.Environment()
+  );
+  expect(actual.parameters).toStrictEqual(expected.parameters);
+  expect(actual.body).toStrictEqual(expected.body);
+});
+
+test("test function application", () => {
+  const tests: [string, number][] = [
+    ["let identity = fn(x) { x; }; identity(5);", 5],
+    ["let identity = fn(x) { return x; }; identity(5);", 5],
+    ["let double = fn(x) { x * 2; }; double(5);", 10],
+    ["let add = fn(x, y) { x + y; }; add(5, 5);", 10],
+    ["let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20],
+    ["fn(x) { x; }(5)", 5],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd).map(obj.integer);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test closures", () => {
+  const input = `
+    let adder = fn(x) { fn(y) { x + y; } };
+    let addTwo = adder(2);
+    addTwo(2);
+  `;
+  const actual = testEval(input);
+  const expected = obj.integer(4);
   expect(actual).toStrictEqual(expected);
 });

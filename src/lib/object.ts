@@ -1,3 +1,6 @@
+import * as ast from "./ast";
+import * as env from "./environment";
+
 /* eslint-disable @typescript-eslint/ban-types */
 export interface Integer {
   kind: "integer";
@@ -52,7 +55,27 @@ export const isError = (value: unknown): value is Error => {
   return false;
 };
 
-export type Object = Integer | Boolean | Null | Error | ReturnValue;
+export interface Func {
+  kind: "func";
+  parameters: ast.Identifier[];
+  body: ast.BlockStatement;
+  env: env.Environment;
+}
+
+export const func = (
+  parameters: ast.Identifier[],
+  body: ast.BlockStatement,
+  env: env.Environment
+): Func => {
+  return {
+    kind: "func",
+    parameters,
+    body,
+    env,
+  };
+};
+
+export type Object = Integer | Boolean | Null | Error | ReturnValue | Func;
 
 export function toString(object: Object): string {
   switch (object.kind) {
@@ -66,6 +89,11 @@ export function toString(object: Object): string {
       return `ERROR: ${object.value}`;
     case "returnValue":
       return toString(object);
+    case "func": {
+      const parameters = object.parameters.map(ast.toString).join(", ");
+      const body = ast.toString(object.body);
+      return `fn(${parameters}){\n${body}\n}`;
+    }
   }
 }
 
@@ -73,6 +101,7 @@ export function eq(a: Object, b: Object): boolean {
   if (a.kind === "null" && b.kind === "null") return true;
   if (a.kind === "null") return false;
   if (b.kind === "null") return false;
+  if (a.kind === "func" || b.kind === "func") return false;
   return a.value === b.value;
 }
 
