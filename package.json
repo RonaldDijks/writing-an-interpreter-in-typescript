@@ -17,7 +17,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "repl": "ts-node src/index.ts",
     "test": "tsc --noEmit && jest"
   }
 }
