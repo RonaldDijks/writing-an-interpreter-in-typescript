@@ -1,4 +1,5 @@
 import * as ast from "./ast";
+import { builtins } from "./builtins";
 import * as env from "./environment";
 import * as obj from "./object";
 
@@ -71,12 +72,18 @@ export function applyFunction(
   func: obj.Object,
   args: obj.Object[]
 ): obj.Object {
-  if (func.kind !== "func") {
-    return obj.error("not a function: " + func.kind);
+  switch (func.kind) {
+    case "builtin": {
+      return func.fn(args);
+    }
+    case "func": {
+      const extendedEnvironment = extendFunctionEnvironment(func, args);
+      const evaluated = evaluate(func.body, extendedEnvironment);
+      return unwrapReturnValue(evaluated);
+    }
+    default:
+      return obj.error(`not a function: ${func.kind}`);
   }
-  const extendedEnvironment = extendFunctionEnvironment(func, args);
-  const evaluated = evaluate(func.body, extendedEnvironment);
-  return unwrapReturnValue(evaluated);
 }
 
 export function extendFunctionEnvironment(
@@ -121,8 +128,10 @@ export function evaluateIdentifier(
   env: env.Environment
 ): obj.Object {
   const value = env.get(node.value);
-  if (!value) return obj.error(`identifier not found: ${node.value}`);
-  return value;
+  if (value) return value;
+  const builtin = builtins.get(node.value);
+  if (builtin) return builtin;
+  return obj.error(`identifier not found: ${node.value}`);
 }
 
 export function evaluateProgram(

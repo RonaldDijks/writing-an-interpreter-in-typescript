@@ -82,6 +82,20 @@ export const func = (
   };
 };
 
+export type BuiltInFunction = (args: Object[]) => Object;
+
+export interface Builtin {
+  kind: "builtin";
+  fn: BuiltInFunction;
+}
+
+export const builtin = (fn: BuiltInFunction): Builtin => {
+  return {
+    kind: "builtin",
+    fn,
+  };
+};
+
 export type Object =
   | Integer
   | Boolean
@@ -89,7 +103,8 @@ export type Object =
   | Null
   | Error
   | ReturnValue
-  | Func;
+  | Func
+  | Builtin;
 
 export function toString(object: Object): string {
   switch (object.kind) {
@@ -110,6 +125,8 @@ export function toString(object: Object): string {
       const body = ast.toString(object.body);
       return `fn(${parameters}){\n${body}\n}`;
     }
+    case "builtin":
+      return "builtin function";
   }
 }
 
@@ -118,6 +135,7 @@ export function eq(a: Object, b: Object): boolean {
   if (a.kind === "null") return false;
   if (b.kind === "null") return false;
   if (a.kind === "func" || b.kind === "func") return false;
+  if (a.kind === "builtin" || b.kind === "builtin") return false;
   return a.value === b.value;
 }
 

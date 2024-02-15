@@ -219,3 +219,20 @@ test("string concatenation", () => {
   const expected = obj.string("hello world");
   expect(actual).toStrictEqual(expected);
 });
+
+test("builtin functions", () => {
+  const tests: [string, obj.Object][] = [
+    ['len("")', obj.integer(0)],
+    ['len("four")', obj.integer(4)],
+    ['len("hello world")', obj.integer(11)],
+    ["len(1)", obj.error("argument to `len` not supported, got integer")],
+    [
+      'len("one", "two")',
+      obj.error("wrong number of arguments. got=2, want=1"),
+    ],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd);
+  expect(actual).toStrictEqual(expected);
+});
