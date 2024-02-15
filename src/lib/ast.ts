@@ -95,6 +95,18 @@ export function booleanLiteral(value: boolean): BooleanLiteral {
   };
 }
 
+export interface StringLiteral {
+  kind: "stringLiteral";
+  value: string;
+}
+
+export function stringLiteral(value: string): StringLiteral {
+  return {
+    kind: "stringLiteral",
+    value,
+  };
+}
+
 export interface FunctionLiteral {
   kind: "functionLiteral";
   parameters: Identifier[];
@@ -190,6 +202,7 @@ export type Expression =
   | Identifier
   | IntegerLiteral
   | BooleanLiteral
+  | StringLiteral
   | FunctionLiteral
   | PrefixExpression
   | InfixExpression
@@ -226,6 +239,8 @@ export function toString(node: Node): string {
       return `${node.value.toString()}`;
     case "booleanLiteral":
       return `${node.value.toString()}`;
+    case "stringLiteral":
+      return `"${node.value}"`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
     case "infixExpression": {

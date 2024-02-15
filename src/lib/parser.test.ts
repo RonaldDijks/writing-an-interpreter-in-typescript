@@ -1,6 +1,6 @@
+import * as ast from "./ast";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
-import * as ast from "./ast";
 
 const checkParserErrors = (parser: Parser) => {
   if (parser.errors.length !== 0) {
@@ -283,6 +283,19 @@ test("test call expression", () => {
   ]);
 
   const input = `add(1, 2 * 3, 4 + 5);`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  expect(program).toStrictEqual(expected);
+});
+
+test("test string expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(ast.stringLiteral("hello world")),
+  ]);
+
+  const input = `"hello world";`;
   const lexer = new Lexer(input);
   const parser = new Parser(lexer);
   const program = parser.parseProgram();

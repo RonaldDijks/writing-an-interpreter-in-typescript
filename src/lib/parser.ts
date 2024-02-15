@@ -35,6 +35,7 @@ export class Parser {
   private _prefixParseFunctions = new Map<TokenKind, PrefixParserFunction>([
     ["integer", this.parseIntegerLiteral.bind(this)],
     ["true", this.parseBooleanLiteral.bind(this)],
+    ["string", this.parseStringLiteral.bind(this)],
     ["false", this.parseBooleanLiteral.bind(this)],
     ["function", this.parseFunctionLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
@@ -144,8 +145,6 @@ export class Parser {
 
     const expr = this.parseExpression(Precedence.Lowest);
 
-    console.log(this._currentToken.kind, this._peekToken?.kind, expr);
-
     if (!expr) throw new Error("Expected new expression");
 
     while (!this.currentTokenIs("semicolon")) {
@@ -195,6 +194,10 @@ export class Parser {
 
   private parseBooleanLiteral(): ast.BooleanLiteral | undefined {
     return ast.booleanLiteral(this._currentToken.kind === "true");
+  }
+
+  private parseStringLiteral(): ast.StringLiteral | undefined {
+    return ast.stringLiteral(this._currentToken.text);
   }
 
   private parseFunctionLiteral(): ast.FunctionLiteral | undefined {

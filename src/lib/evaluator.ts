@@ -20,6 +20,8 @@ export function evaluate(
       return obj.integer(node.value);
     case "booleanLiteral":
       return obj.boolean(node.value);
+    case "stringLiteral":
+      return obj.string(node.value);
     case "prefixExpression": {
       const right = evaluate(node.right, environment);
       if (obj.isError(right)) return right;
@@ -61,7 +63,7 @@ export function evaluate(
       return applyFunction(func, args);
     }
     default:
-      throw new Error(`unexpected node: '${node}'`);
+      throw new Error(`unexpected node: '${JSON.stringify(node)}'`);
   }
 }
 
@@ -206,7 +208,23 @@ export function evaluateInfixExpression(
   if (left.kind === "integer" && right.kind === "integer")
     return evaluateIntegerInfixExpression(operator, left, right);
 
+  if (left.kind === "string" && right.kind === "string")
+    return evaluateStringInfixExpression(operator, left, right);
+
   return obj.error(`unknown operator: ${left.kind} ${operator} ${right.kind}`);
+}
+
+export function evaluateStringInfixExpression(
+  operator: string,
+  left: obj.String,
+  right: obj.String
+): obj.Object {
+  if (operator !== "+") {
+    return obj.error(
+      `unknown operator: ${left.kind} ${operator} ${right.kind}`
+    );
+  }
+  return obj.string(left.value + right.value);
 }
 
 export function evaluateIntegerInfixExpression(

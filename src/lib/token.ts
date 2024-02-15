@@ -6,6 +6,7 @@ export interface Token {
 export type TokenKind =
   | "identifier"
   | "integer"
+  | "string"
   | "illegal"
   | "eof"
   | "assign"

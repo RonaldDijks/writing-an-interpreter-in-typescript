@@ -19,6 +19,13 @@ export const FALSE: Readonly<Boolean> = { kind: "boolean", value: false };
 
 export const boolean = (value: boolean): Boolean => (value ? TRUE : FALSE);
 
+export interface String {
+  kind: "string";
+  value: string;
+}
+
+export const string = (value: string): String => ({ kind: "string", value });
+
 export interface Null {
   kind: "null";
 }
@@ -75,7 +82,14 @@ export const func = (
   };
 };
 
-export type Object = Integer | Boolean | Null | Error | ReturnValue | Func;
+export type Object =
+  | Integer
+  | Boolean
+  | String
+  | Null
+  | Error
+  | ReturnValue
+  | Func;
 
 export function toString(object: Object): string {
   switch (object.kind) {
@@ -83,6 +97,8 @@ export function toString(object: Object): string {
       return `${object.value} : boolean`;
     case "integer":
       return `${object.value} : integer`;
+    case "string":
+      return `${object.value} : string`;
     case "null":
       return `null`;
     case "error":

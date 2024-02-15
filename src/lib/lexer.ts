@@ -89,6 +89,9 @@ export class Lexer {
       case "}":
         token = { kind: "rightBrace", text: "}" };
         break;
+      case '"':
+        token = this.readString();
+        break;
       case "\0":
         this._ended = true;
         token = { kind: "eof", text: "\0" };
@@ -132,6 +135,16 @@ export class Lexer {
     }
     const text = this._input.substring(start, this._position - 1);
     return { kind: "integer", text };
+  }
+
+  readString(): Token {
+    const start = this._position;
+    this.readChar();
+    while (this._current !== '"') {
+      this.readChar();
+    }
+    const text = this._input.substring(start, this._position - 1);
+    return { kind: "string", text };
   }
 }
 

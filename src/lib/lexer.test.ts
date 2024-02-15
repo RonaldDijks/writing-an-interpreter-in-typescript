@@ -1,11 +1,11 @@
-import { Token } from "./token";
 import { lex } from "./lexer";
+import { Token } from "./token";
 
 test("testNextToken", () => {
   const input = `
     let five = 5;
     let ten = 10;
-  
+
     let add = fn(x, y) {
         x + y;
     };
@@ -22,6 +22,8 @@ test("testNextToken", () => {
 
     10 == 10;
     10 != 9;
+    "foobar"
+    "foo bar"
   `;
 
   const expected: Token[] = [
@@ -98,6 +100,8 @@ test("testNextToken", () => {
     { kind: "notEquals", text: "!=" },
     { kind: "integer", text: "9" },
     { kind: "semicolon", text: ";" },
+    { kind: "string", text: "foobar" },
+    { kind: "string", text: "foo bar" },
     { kind: "eof", text: "\0" },
   ];
 

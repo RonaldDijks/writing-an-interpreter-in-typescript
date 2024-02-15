@@ -1,9 +1,9 @@
-import { Lexer } from "./lexer";
-import { Parser } from "./parser";
-import { evaluate } from "./evaluator";
-import * as obj from "./object";
-import * as env from "./environment";
 import * as ast from "./ast";
+import * as env from "./environment";
+import { evaluate } from "./evaluator";
+import { Lexer } from "./lexer";
+import * as obj from "./object";
+import { Parser } from "./parser";
 
 function fst<A, B>(tuple: [A, B]): A {
   return tuple[0];
@@ -142,6 +142,7 @@ test("test error handling", () => {
     `,
       "unknown operator: boolean + boolean",
     ],
+    [`"hello" - "world"`, "unknown operator: string - string"],
   ];
 
   const actual = tests.map(fst).map(testEval);
@@ -202,5 +203,19 @@ test("test closures", () => {
   `;
   const actual = testEval(input);
   const expected = obj.integer(4);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("test string literal", () => {
+  const input = `"hello world"`;
+  const actual = testEval(input);
+  const expected = obj.string("hello world");
+  expect(actual).toStrictEqual(expected);
+});
+
+test("string concatenation", () => {
+  const input = `"hello" + " " + "world"`;
+  const actual = testEval(input);
+  const expected = obj.string("hello world");
   expect(actual).toStrictEqual(expected);
 });
