@@ -1,6 +1,6 @@
 import * as ast from "./ast";
-import * as obj from "./object";
 import * as env from "./environment";
+import * as obj from "./object";
 
 export function evaluate(
   node: ast.Node,

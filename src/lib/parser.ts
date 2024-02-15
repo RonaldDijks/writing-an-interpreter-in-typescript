@@ -1,6 +1,6 @@
+import * as ast from "./ast";
 import { Lexer } from "./lexer";
 import { Token, TokenKind } from "./token";
-import * as ast from "./ast";
 
 type PrefixParserFunction = () => ast.Expression | undefined;
 type InfixParserFunction = (_: ast.Expression) => ast.Expression | undefined;
@@ -144,6 +144,8 @@ export class Parser {
 
     const expr = this.parseExpression(Precedence.Lowest);
 
+    console.log(this._currentToken.kind, this._peekToken?.kind, expr);
+
     if (!expr) throw new Error("Expected new expression");
 
     while (!this.currentTokenIs("semicolon")) {
@@ -184,7 +186,7 @@ export class Parser {
 
   private parseIntegerLiteral(): ast.IntegerLiteral | undefined {
     const value = Number(this._currentToken.text);
-    if (value === NaN) {
+    if (isNaN(value)) {
       this.errors.push(`could not parse ${this._currentToken.text} as integer`);
       return undefined;
     }
