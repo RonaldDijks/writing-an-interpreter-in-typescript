@@ -19,6 +19,7 @@ export type TokenKind =
   | "greaterThen"
   | "comma"
   | "semicolon"
+  | "colon"
   | "leftParenthesis"
   | "rightParenthesis"
   | "leftBrace"

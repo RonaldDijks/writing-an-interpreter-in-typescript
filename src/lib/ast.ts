@@ -119,6 +119,25 @@ export function arrayLiteral(elements: Expression[]): ArrayLiteral {
   };
 }
 
+export interface HashLiteral {
+  kind: "hashLiteral";
+  pairs: Array<KeyValuePair<Expression, Expression>>;
+}
+
+export interface KeyValuePair<K, V> {
+  key: K;
+  value: V;
+}
+
+export function hashLiteral(
+  pairs: Array<KeyValuePair<Expression, Expression>>
+): HashLiteral {
+  return {
+    kind: "hashLiteral",
+    pairs,
+  };
+}
+
 export interface FunctionLiteral {
   kind: "functionLiteral";
   parameters: Identifier[];
@@ -232,6 +251,7 @@ export type Expression =
   | IntegerLiteral
   | BooleanLiteral
   | ArrayLiteral
+  | HashLiteral
   | StringLiteral
   | FunctionLiteral
   | PrefixExpression
@@ -274,6 +294,10 @@ export function toString(node: Node): string {
       return `"${node.value}"`;
     case "arrayLiteral":
       return `[${node.elements.map(toString).join(", ")}]`;
+    case "hashLiteral":
+      return `{${node.pairs
+        .map((pair) => `${toString(pair.key)}: ${toString(pair.value)}`)
+        .join(", ")}}`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
     case "infixExpression": {

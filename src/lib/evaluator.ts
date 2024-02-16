@@ -30,6 +30,8 @@ export function evaluate(
       }
       return obj.array(elements);
     }
+    case "hashLiteral":
+      return evaluateHashLiteral(node, environment);
     case "prefixExpression": {
       const right = evaluate(node.right, environment);
       if (obj.isError(right)) return right;
@@ -297,6 +299,9 @@ export function evaluateIndexExpression(
   if (left.kind === "array" && index.kind === "integer") {
     return evaluateArrayIndexExpression(left, index);
   }
+  if (left.kind === "hashmap") {
+    return evaluateHashIndexExpression(left, index);
+  }
   return obj.error(`index operator not supported: ${left.kind}`);
 }
 
@@ -308,4 +313,32 @@ export function evaluateArrayIndexExpression(
   const max = array.elements.length - 1;
   if (i < 0 || i > max) return obj.NULL;
   return array.elements[i];
+}
+
+export function evaluateHashLiteral(
+  node: ast.HashLiteral,
+  environment: env.Environment
+): obj.Object {
+  const pairs: obj.HashPair[] = [];
+  for (const { key: keyNode, value: valueNode } of node.pairs) {
+    const key = evaluate(keyNode, environment);
+    if (obj.isError(key)) return key;
+    const value = evaluate(valueNode, environment);
+    if (obj.isError(value)) return value;
+    pairs.push({ key, value });
+  }
+  return obj.hashmap(pairs);
+}
+
+export function evaluateHashIndexExpression(
+  hashmap: obj.Hashmap,
+  index: obj.Object
+): obj.Object {
+  const key = obj.hash(index);
+  if (!key) {
+    return obj.error(`unusable as hash key: ${index.kind}`);
+  }
+  const pair = hashmap.pairs.get(key);
+  if (!pair) return obj.NULL;
+  return pair.value;
 }

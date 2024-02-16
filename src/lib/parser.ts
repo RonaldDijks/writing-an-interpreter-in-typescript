@@ -40,6 +40,7 @@ export class Parser {
     ["false", this.parseBooleanLiteral.bind(this)],
     ["string", this.parseStringLiteral.bind(this)],
     ["leftBracket", this.parseArrayLiteral.bind(this)],
+    ["leftBrace", this.parseHashLiteral.bind(this)],
     ["function", this.parseFunctionLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
     ["bang", this.parsePrefixExpression.bind(this)],
@@ -208,6 +209,22 @@ export class Parser {
     const elements = this.parseExpressionList("rightBracket");
     if (!elements) return;
     return ast.arrayLiteral(elements);
+  }
+
+  private parseHashLiteral(): ast.HashLiteral | undefined {
+    const pairs: ast.KeyValuePair<ast.Expression, ast.Expression>[] = [];
+    while (!this.peekTokenIs("rightBrace")) {
+      this.nextToken();
+      const key = this.parseExpression(Precedence.Lowest);
+      if (!this.expectPeek("colon")) return;
+      this.nextToken();
+      const value = this.parseExpression(Precedence.Lowest);
+      if (!key || !value) return;
+      pairs.push({ key, value });
+      if (!this.peekTokenIs("rightBrace") && !this.expectPeek("comma")) return;
+    }
+    if (!this.expectPeek("rightBrace")) return;
+    return ast.hashLiteral(pairs);
   }
 
   private parseFunctionLiteral(): ast.FunctionLiteral | undefined {

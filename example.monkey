@@ -1,2 +1,2 @@
-let x = 5;
-x
+let message = "Hello, World!";
+puts(message);

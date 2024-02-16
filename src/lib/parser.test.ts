@@ -337,3 +337,85 @@ test("index expression", () => {
   checkParserErrors(parser);
   expect(program).toStrictEqual(expected);
 });
+
+test("hash literal", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.hashLiteral([
+        { key: ast.stringLiteral("one"), value: ast.integerLiteral(1) },
+        { key: ast.stringLiteral("two"), value: ast.integerLiteral(2) },
+      ])
+    ),
+  ]);
+
+  const input = `{"one": 1, "two": 2}`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  expect(program).toStrictEqual(expected);
+});
+
+test("parsing empty hash literal", () => {
+  const input = "{}";
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  const stmt = program?.body as ast.ExpressionStatement[];
+  const hash = stmt[0].expression as ast.HashLiteral;
+  expect(hash.pairs.length).toBe(0);
+});
+
+test("parsing hash string keys", () => {
+  const input = `{"one": 1, "two": 2, "three": 3}`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  const stmt = program?.body as ast.ExpressionStatement[];
+  const hash = stmt[0].expression as ast.HashLiteral;
+  const expected: ast.KeyValuePair<ast.Expression, ast.Expression>[] = [
+    { key: ast.stringLiteral("one"), value: ast.integerLiteral(1) },
+    { key: ast.stringLiteral("two"), value: ast.integerLiteral(2) },
+    { key: ast.stringLiteral("three"), value: ast.integerLiteral(3) },
+  ];
+  expect(hash.pairs).toStrictEqual(expected);
+});
+
+test("parsing hash with expressions", () => {
+  const input = `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  const stmt = program?.body as ast.ExpressionStatement[];
+  const hash = stmt[0].expression as ast.HashLiteral;
+  const expected: ast.KeyValuePair<ast.Expression, ast.Expression>[] = [
+    {
+      key: ast.stringLiteral("one"),
+      value: ast.infixExpression(
+        "+",
+        ast.integerLiteral(0),
+        ast.integerLiteral(1)
+      ),
+    },
+    {
+      key: ast.stringLiteral("two"),
+      value: ast.infixExpression(
+        "-",
+        ast.integerLiteral(10),
+        ast.integerLiteral(8)
+      ),
+    },
+    {
+      key: ast.stringLiteral("three"),
+      value: ast.infixExpression(
+        "/",
+        ast.integerLiteral(15),
+        ast.integerLiteral(5)
+      ),
+    },
+  ];
+  expect(hash.pairs).toStrictEqual(expected);
+});

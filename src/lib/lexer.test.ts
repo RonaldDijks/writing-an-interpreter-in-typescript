@@ -25,6 +25,7 @@ test("testNextToken", () => {
     "foobar"
     "foo bar"
     [1, 2]
+    {"foo": "bar"}
   `;
 
   const expected: Token[] = [
@@ -108,6 +109,11 @@ test("testNextToken", () => {
     { kind: "comma", text: "," },
     { kind: "integer", text: "2" },
     { kind: "rightBracket", text: "]" },
+    { kind: "leftBrace", text: "{" },
+    { kind: "string", text: "foo" },
+    { kind: "colon", text: ":" },
+    { kind: "string", text: "bar" },
+    { kind: "rightBrace", text: "}" },
     { kind: "eof", text: "\0" },
   ];
 

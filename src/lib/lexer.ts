@@ -74,6 +74,9 @@ export class Lexer {
       case ";":
         token = { kind: "semicolon", text: ";" };
         break;
+      case ":":
+        token = { kind: "colon", text: ":" };
+        break;
       case ",":
         token = { kind: "comma", text: "," };
         break;

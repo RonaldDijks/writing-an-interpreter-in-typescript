@@ -2,6 +2,13 @@ import * as obj from "./object";
 
 export const builtins = new Map<string, obj.Builtin>([
   [
+    "puts",
+    obj.builtin((args) => {
+      args.forEach((arg) => console.log(obj.toString(arg)));
+      return obj.NULL;
+    }),
+  ],
+  [
     "len",
     obj.builtin((args) => {
       if (args.length !== 1) {

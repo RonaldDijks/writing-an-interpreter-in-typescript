@@ -143,6 +143,13 @@ test("error handling", () => {
       "unknown operator: boolean + boolean",
     ],
     [`"hello" - "world"`, "unknown operator: string - string"],
+    ["len(1)", "argument to `len` not supported, got integer"],
+    ["len(1, 2)", "wrong number of arguments. got=2, want=1"],
+    ["first(1)", "argument to `first` must be ARRAY, got integer"],
+    ["first(1, 2)", "wrong number of arguments. got=2, want=1"],
+    ["last(1)", "argument to `last` must be ARRAY, got integer"],
+    ["last(1, 2)", "wrong number of arguments. got=2, want=1"],
+    [`{"name": "Monkey"}[fn(x) { x }];`, "unusable as hash key: func"],
   ];
 
   const actual = tests.map(fst).map(testEval);
@@ -259,6 +266,46 @@ test("index expressions", () => {
     ["let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", obj.integer(2)],
     ["[1, 2, 3][3]", obj.NULL],
     ["[1, 2, 3][-1]", obj.NULL],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("evaluate hash literals", () => {
+  const input = `
+    let two = "two";
+    {
+      "one": 10 - 9,
+      two: 1 + 1,
+      "thr" + "ee": 6 / 2,
+      4: 4,
+      true: 5,
+      false: 6
+    }
+  `;
+  const actual = testEval(input);
+  const expected = obj.hashmap([
+    { key: obj.string("one"), value: obj.integer(1) },
+    { key: obj.string("two"), value: obj.integer(2) },
+    { key: obj.string("three"), value: obj.integer(3) },
+    { key: obj.integer(4), value: obj.integer(4) },
+    { key: obj.boolean(true), value: obj.integer(5) },
+    { key: obj.boolean(false), value: obj.integer(6) },
+  ]);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("hash index expressions", () => {
+  const tests: [string, obj.Object][] = [
+    ['{"foo": 5}["foo"]', obj.integer(5)],
+    ['{"foo": 5}["bar"]', obj.NULL],
+    ['let key = "foo"; {"foo": 5}[key]', obj.integer(5)],
+    ['{}["foo"]', obj.NULL],
+    ["{5: 5}[5]", obj.integer(5)],
+    ["{true: 5}[true]", obj.integer(5)],
+    ["{false: 5}[false]", obj.integer(5)],
   ];
 
   const actual = tests.map(fst).map(testEval);

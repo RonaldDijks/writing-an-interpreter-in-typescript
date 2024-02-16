@@ -1,3 +1,4 @@
+import objectHash from "object-hash";
 import * as ast from "./ast";
 import * as env from "./environment";
 
@@ -106,11 +107,33 @@ export const builtin = (fn: BuiltInFunction): Builtin => {
   };
 };
 
+export interface HashPair {
+  key: Object;
+  value: Object;
+}
+
+export interface Hashmap {
+  kind: "hashmap";
+  pairs: Map<string, HashPair>;
+}
+
+export const hashmap = (pairs: HashPair[]): Hashmap => {
+  return {
+    kind: "hashmap",
+    pairs: pairs.reduce((acc, pair) => {
+      const key = hash(pair.key)!;
+      acc.set(key, pair);
+      return acc;
+    }, new Map<string, HashPair>()),
+  };
+};
+
 export type Object =
   | Integer
   | Boolean
   | String
   | Array
+  | Hashmap
   | Null
   | Error
   | ReturnValue
@@ -127,6 +150,12 @@ export function toString(object: Object): string {
       return `${object.value} : string`;
     case "array":
       return `[${object.elements.map(toString).join(", ")}]`;
+    case "hashmap": {
+      const pairs = Array.from(object.pairs.entries()).map(
+        ([_, value]) => `${toString(value.key)}: ${toString(value.value)}`
+      );
+      return `{${pairs.join(", ")}}`;
+    }
     case "null":
       return `null`;
     case "error":
@@ -149,6 +178,7 @@ export function eq(a: Object, b: Object): boolean {
   if (b.kind === "null") return false;
   if (a.kind === "func" || b.kind === "func") return false;
   if (a.kind === "builtin" || b.kind === "builtin") return false;
+  if (a.kind === "hashmap" || b.kind === "hashmap") return false;
   if (a.kind === "array" || b.kind === "array") {
     if (a.kind !== "array" || b.kind !== "array") return false;
     if (a.elements.length !== b.elements.length) return false;
@@ -171,4 +201,12 @@ export function isTruthy(a: Object): boolean {
       return true;
   }
   return true;
+}
+
+export function hash(obj: Object): string | null {
+  if (obj.kind === "builtin" || obj.kind === "func") {
+    return null;
+  }
+
+  return objectHash(obj);
 }
