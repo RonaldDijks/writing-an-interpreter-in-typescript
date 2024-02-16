@@ -1,6 +1,6 @@
 import * as ast from "./ast";
 
-test("test nodeToString", () => {
+test("nodeToString", () => {
   const program = ast.program([
     ast.letStatement(ast.identifier("myVar"), ast.identifier("anotherVar")),
   ]);

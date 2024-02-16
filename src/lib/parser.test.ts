@@ -32,7 +32,7 @@ test("testLetStatement", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test return statement", () => {
+test("return statement", () => {
   const expected = ast.program([
     ast.returnStatement(ast.integerLiteral(5)),
     ast.returnStatement(ast.integerLiteral(10)),
@@ -52,7 +52,7 @@ test("test return statement", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test identifier expression", () => {
+test("identifier expression", () => {
   const expected = ast.program([
     ast.expressionStatement(ast.identifier("foobar")),
   ]);
@@ -65,7 +65,7 @@ test("test identifier expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test integer literal expression", () => {
+test("integer literal expression", () => {
   const expected = ast.program([
     ast.expressionStatement(ast.integerLiteral(5)),
   ]);
@@ -78,7 +78,7 @@ test("test integer literal expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test parsing prefix expressions", () => {
+test("parsing prefix expressions", () => {
   const expected = [
     ast.program([
       ast.expressionStatement(ast.prefixExpression("!", ast.integerLiteral(5))),
@@ -111,7 +111,7 @@ test("test parsing prefix expressions", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test parsing infix expression", () => {
+test("parsing infix expression", () => {
   const operators = ["+", "-", "*", "/", ">", "<", "==", "!="];
 
   const expected = operators.map((operator) => {
@@ -137,7 +137,7 @@ test("test parsing infix expression", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test operator precedence parsing", () => {
+test("operator precedence parsing", () => {
   [
     ["-a * b", "((-a) * b)"],
     ["!-a", "(!(-a))"],
@@ -176,7 +176,7 @@ test("test operator precedence parsing", () => {
   });
 });
 
-test("test boolean expression", () => {
+test("boolean expression", () => {
   const expected = ast.program([
     ast.expressionStatement(ast.booleanLiteral(true)),
     ast.expressionStatement(ast.booleanLiteral(false)),
@@ -197,7 +197,7 @@ test("test boolean expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test if expression", () => {
+test("if expression", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.ifExpression(
@@ -216,7 +216,7 @@ test("test if expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test if else expression", () => {
+test("if else expression", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.ifExpression(
@@ -236,7 +236,7 @@ test("test if else expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test function literal", () => {
+test("function literal", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.functionLiteral(
@@ -258,7 +258,7 @@ test("test function literal", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test function parameter parsing", () => {
+test("function parameter parsing", () => {
   const expected = [[], ["x"], ["x", "y", "z"]];
 
   const input = `
@@ -276,7 +276,7 @@ test("test function parameter parsing", () => {
   expect(params).toStrictEqual(expected);
 });
 
-test("test call expression", () => {
+test("call expression", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.callExpression(ast.identifier("add"), [
@@ -295,7 +295,7 @@ test("test call expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test string expression", () => {
+test("string expression", () => {
   const expected = ast.program([
     ast.expressionStatement(ast.stringLiteral("hello world")),
   ]);
@@ -308,7 +308,7 @@ test("test string expression", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test array literal", () => {
+test("array literal", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.arrayLiteral([ast.integerLiteral(1), ast.integerLiteral(2)])
@@ -323,7 +323,7 @@ test("test array literal", () => {
   expect(program).toStrictEqual(expected);
 });
 
-test("test index expression", () => {
+test("index expression", () => {
   const expected = ast.program([
     ast.expressionStatement(
       ast.indexExpression(ast.identifier("arr"), ast.integerLiteral(1))

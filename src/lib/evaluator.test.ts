@@ -26,7 +26,7 @@ function testEval(input: string): obj.Object | undefined {
   return object;
 }
 
-test("test eval integer expression", () => {
+test("eval integer expression", () => {
   const tests: [string, number][] = [
     ["5", 5],
     ["10", 10],
@@ -50,7 +50,7 @@ test("test eval integer expression", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test eval boolean expression", () => {
+test("eval boolean expression", () => {
   const tests: [string, boolean][] = [
     ["true", true],
     ["false", false],
@@ -84,7 +84,7 @@ test("test eval boolean expression", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test eval if else expressions", () => {
+test("eval if else expressions", () => {
   const tests: [string, obj.Object][] = [
     ["if (true) { 10 }", obj.integer(10)],
     ["if (false) { 10 }", obj.NULL],
@@ -108,7 +108,7 @@ const nestedReturnStatements = `
   }
 `;
 
-test("test return statement", () => {
+test("return statement", () => {
   const tests: [string, number][] = [
     ["return 10;", 10],
     ["return 10; 9;", 10],
@@ -122,7 +122,7 @@ test("test return statement", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test error handling", () => {
+test("error handling", () => {
   const tests: [string, string][] = [
     ["foobar", "identifier not found: foobar"],
     ["5 + true;", "type mismatch: integer + boolean"],
@@ -150,7 +150,7 @@ test("test error handling", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test let statements", () => {
+test("let statements", () => {
   const tests: [string, number][] = [
     ["let a = 5; a;", 5],
     ["let a = 5 * 5; a;", 25],
@@ -163,7 +163,7 @@ test("test let statements", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test function object", () => {
+test("function object", () => {
   const test = `fn(x) { x + 2 }`;
   const actual = testEval(test);
   if (actual?.kind !== "func") throw new Error("expected func");
@@ -180,7 +180,7 @@ test("test function object", () => {
   expect(actual.body).toStrictEqual(expected.body);
 });
 
-test("test function application", () => {
+test("function application", () => {
   const tests: [string, number][] = [
     ["let identity = fn(x) { x; }; identity(5);", 5],
     ["let identity = fn(x) { return x; }; identity(5);", 5],
@@ -195,7 +195,7 @@ test("test function application", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test closures", () => {
+test("closures", () => {
   const input = `
     let adder = fn(x) { fn(y) { x + y; } };
     let addTwo = adder(2);
@@ -206,7 +206,7 @@ test("test closures", () => {
   expect(actual).toStrictEqual(expected);
 });
 
-test("test string literal", () => {
+test("string literal", () => {
   const input = `"hello world"`;
   const actual = testEval(input);
   const expected = obj.string("hello world");
