@@ -26,6 +26,16 @@ export interface String {
 
 export const string = (value: string): String => ({ kind: "string", value });
 
+export interface Array {
+  kind: "array";
+  elements: Object[];
+}
+
+export const array = (elements: Object[]): Array => ({
+  kind: "array",
+  elements,
+});
+
 export interface Null {
   kind: "null";
 }
@@ -100,6 +110,7 @@ export type Object =
   | Integer
   | Boolean
   | String
+  | Array
   | Null
   | Error
   | ReturnValue
@@ -114,6 +125,8 @@ export function toString(object: Object): string {
       return `${object.value} : integer`;
     case "string":
       return `${object.value} : string`;
+    case "array":
+      return `[${object.elements.map(toString).join(", ")}]`;
     case "null":
       return `null`;
     case "error":
@@ -136,6 +149,15 @@ export function eq(a: Object, b: Object): boolean {
   if (b.kind === "null") return false;
   if (a.kind === "func" || b.kind === "func") return false;
   if (a.kind === "builtin" || b.kind === "builtin") return false;
+  if (a.kind === "array" || b.kind === "array") {
+    if (a.kind !== "array" || b.kind !== "array") return false;
+    if (a.elements.length !== b.elements.length) return false;
+    for (let i = 0; i < a.elements.length; i++) {
+      if (!eq(a.elements[i], b.elements[i])) return false;
+    }
+    return true;
+  }
+
   return a.value === b.value;
 }
 

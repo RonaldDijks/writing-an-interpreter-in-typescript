@@ -23,6 +23,8 @@ export type TokenKind =
   | "rightParenthesis"
   | "leftBrace"
   | "rightBrace"
+  | "leftBracket"
+  | "rightBracket"
   | "function"
   | "let"
   | "if"

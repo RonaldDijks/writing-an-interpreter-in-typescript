@@ -23,6 +23,13 @@ export function evaluate(
       return obj.boolean(node.value);
     case "stringLiteral":
       return obj.string(node.value);
+    case "arrayLiteral": {
+      const elements = evaluateExpressions(node.elements, environment);
+      if (elements.length == 1 && obj.isError(elements[0])) {
+        return elements[0];
+      }
+      return obj.array(elements);
+    }
     case "prefixExpression": {
       const right = evaluate(node.right, environment);
       if (obj.isError(right)) return right;
@@ -62,6 +69,13 @@ export function evaluate(
         return args[0];
       }
       return applyFunction(func, args);
+    }
+    case "indexExpression": {
+      const left = evaluate(node.left, environment);
+      if (obj.isError(left)) return left;
+      const index = evaluate(node.index, environment);
+      if (obj.isError(index)) return index;
+      return evaluateIndexExpression(left, index);
     }
     default:
       throw new Error(`unexpected node: '${JSON.stringify(node)}'`);
@@ -274,4 +288,24 @@ export function evaluateIfExpression(
   }
 
   return obj.NULL;
+}
+
+export function evaluateIndexExpression(
+  left: obj.Object,
+  index: obj.Object
+): obj.Object {
+  if (left.kind === "array" && index.kind === "integer") {
+    return evaluateArrayIndexExpression(left, index);
+  }
+  return obj.error(`index operator not supported: ${left.kind}`);
+}
+
+export function evaluateArrayIndexExpression(
+  array: obj.Array,
+  index: obj.Integer
+): obj.Object {
+  const i = index.value;
+  const max = array.elements.length - 1;
+  if (i < 0 || i > max) return obj.NULL;
+  return array.elements[i];
 }

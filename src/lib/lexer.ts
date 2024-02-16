@@ -89,6 +89,12 @@ export class Lexer {
       case "}":
         token = { kind: "rightBrace", text: "}" };
         break;
+      case "[":
+        token = { kind: "leftBracket", text: "[" };
+        break;
+      case "]":
+        token = { kind: "rightBracket", text: "]" };
+        break;
       case '"':
         token = this.readString();
         break;

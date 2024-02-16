@@ -13,6 +13,7 @@ export enum Precedence {
   Product = 4,
   Prefix = 5,
   Call = 6,
+  Index = 7,
 }
 
 const precedences = new Map<TokenKind, number>([
@@ -25,6 +26,7 @@ const precedences = new Map<TokenKind, number>([
   ["slash", Precedence.Product],
   ["asterisk", Precedence.Product],
   ["leftParenthesis", Precedence.Call],
+  ["leftBracket", Precedence.Index],
 ]);
 
 export class Parser {
@@ -35,8 +37,9 @@ export class Parser {
   private _prefixParseFunctions = new Map<TokenKind, PrefixParserFunction>([
     ["integer", this.parseIntegerLiteral.bind(this)],
     ["true", this.parseBooleanLiteral.bind(this)],
-    ["string", this.parseStringLiteral.bind(this)],
     ["false", this.parseBooleanLiteral.bind(this)],
+    ["string", this.parseStringLiteral.bind(this)],
+    ["leftBracket", this.parseArrayLiteral.bind(this)],
     ["function", this.parseFunctionLiteral.bind(this)],
     ["identifier", this.parseIdentifier.bind(this)],
     ["bang", this.parsePrefixExpression.bind(this)],
@@ -55,6 +58,7 @@ export class Parser {
     ["lessThen", this.parseInfixExpression.bind(this)],
     ["greaterThen", this.parseInfixExpression.bind(this)],
     ["leftParenthesis", this.parseCallExpression.bind(this)],
+    ["leftBracket", this.parseIndexExpression.bind(this)],
   ]);
 
   public errors: string[];
@@ -200,6 +204,12 @@ export class Parser {
     return ast.stringLiteral(this._currentToken.text);
   }
 
+  private parseArrayLiteral(): ast.ArrayLiteral | undefined {
+    const elements = this.parseExpressionList("rightBracket");
+    if (!elements) return;
+    return ast.arrayLiteral(elements);
+  }
+
   private parseFunctionLiteral(): ast.FunctionLiteral | undefined {
     if (!this.expectPeek("leftParenthesis")) return;
     const parameters = this.parseFunctionParameters();
@@ -279,11 +289,21 @@ export class Parser {
   private parseCallExpression(
     left: ast.Expression
   ): ast.CallExpression | undefined {
-    const args = this.parseCallArugments();
+    const args = this.parseExpressionList("rightParenthesis");
     if (left.kind === "identifier" || left.kind == "functionLiteral") {
       if (!args) return;
       return ast.callExpression(left, args);
     }
+  }
+
+  private parseIndexExpression(
+    left: ast.Expression
+  ): ast.IndexExpression | undefined {
+    this.nextToken();
+    const index = this.parseExpression(Precedence.Lowest);
+    if (!index) return;
+    if (!this.expectPeek("rightBracket")) return;
+    return ast.indexExpression(left, index);
   }
 
   parseCallArugments(): ast.Expression[] | undefined {
@@ -346,5 +366,30 @@ export class Parser {
       this.nextToken();
     }
     return ast.blockStatement(statements);
+  }
+
+  private parseExpressionList(end: TokenKind): ast.Expression[] | undefined {
+    const list: ast.Expression[] = [];
+
+    if (this.peekTokenIs(end)) {
+      this.nextToken();
+      return list;
+    }
+
+    this.nextToken();
+    const expr = this.parseExpression(Precedence.Lowest);
+    if (!expr) return;
+    list.push(expr);
+
+    while (this.peekTokenIs("comma")) {
+      this.nextToken();
+      this.nextToken();
+      const expr = this.parseExpression(Precedence.Lowest);
+      if (expr) list.push(expr);
+    }
+
+    if (!this.expectPeek(end)) return;
+
+    return list;
   }
 }

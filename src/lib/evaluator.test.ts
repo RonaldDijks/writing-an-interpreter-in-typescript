@@ -236,3 +236,32 @@ test("builtin functions", () => {
   const expected = tests.map(snd);
   expect(actual).toStrictEqual(expected);
 });
+
+test("array literals", () => {
+  const input = "[1, 2 * 2, 3 + 3]";
+  const actual = testEval(input);
+  const expected = obj.array([obj.integer(1), obj.integer(4), obj.integer(6)]);
+  expect(actual).toStrictEqual(expected);
+});
+
+test("index expressions", () => {
+  const tests: [string, obj.Object][] = [
+    ["[1, 2, 3][0]", obj.integer(1)],
+    ["[1, 2, 3][1]", obj.integer(2)],
+    ["[1, 2, 3][2]", obj.integer(3)],
+    ["let i = 0; [1][i];", obj.integer(1)],
+    ["[1, 2, 3][1 + 1];", obj.integer(3)],
+    ["let myArray = [1, 2, 3]; myArray[2];", obj.integer(3)],
+    [
+      "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+      obj.integer(6),
+    ],
+    ["let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", obj.integer(2)],
+    ["[1, 2, 3][3]", obj.NULL],
+    ["[1, 2, 3][-1]", obj.NULL],
+  ];
+
+  const actual = tests.map(fst).map(testEval);
+  const expected = tests.map(snd);
+  expect(actual).toStrictEqual(expected);
+});

@@ -160,6 +160,11 @@ test("test operator precedence parsing", () => {
     ["2 / (5 + 5)", "(2 / (5 + 5))"],
     ["-(5 + 5)", "(-(5 + 5))"],
     ["!(true == true)", "(!(true == true))"],
+    ["a * [1, 2, 3, 4][b * c] * d", "((a * ([1, 2, 3, 4][(b * c)])) * d)"],
+    [
+      "add(a * b[2], b[1], 2 * [1, 2][1])",
+      "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
+    ],
   ].forEach(([input, expected]) => {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
@@ -296,6 +301,36 @@ test("test string expression", () => {
   ]);
 
   const input = `"hello world";`;
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  expect(program).toStrictEqual(expected);
+});
+
+test("test array literal", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.arrayLiteral([ast.integerLiteral(1), ast.integerLiteral(2)])
+    ),
+  ]);
+
+  const input = "[1, 2];";
+  const lexer = new Lexer(input);
+  const parser = new Parser(lexer);
+  const program = parser.parseProgram();
+  checkParserErrors(parser);
+  expect(program).toStrictEqual(expected);
+});
+
+test("test index expression", () => {
+  const expected = ast.program([
+    ast.expressionStatement(
+      ast.indexExpression(ast.identifier("arr"), ast.integerLiteral(1))
+    ),
+  ]);
+
+  const input = "arr[1];";
   const lexer = new Lexer(input);
   const parser = new Parser(lexer);
   const program = parser.parseProgram();

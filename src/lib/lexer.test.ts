@@ -24,6 +24,7 @@ test("testNextToken", () => {
     10 != 9;
     "foobar"
     "foo bar"
+    [1, 2]
   `;
 
   const expected: Token[] = [
@@ -102,6 +103,11 @@ test("testNextToken", () => {
     { kind: "semicolon", text: ";" },
     { kind: "string", text: "foobar" },
     { kind: "string", text: "foo bar" },
+    { kind: "leftBracket", text: "[" },
+    { kind: "integer", text: "1" },
+    { kind: "comma", text: "," },
+    { kind: "integer", text: "2" },
+    { kind: "rightBracket", text: "]" },
     { kind: "eof", text: "\0" },
   ];
 

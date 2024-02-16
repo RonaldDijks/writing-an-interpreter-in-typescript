@@ -107,6 +107,18 @@ export function stringLiteral(value: string): StringLiteral {
   };
 }
 
+export interface ArrayLiteral {
+  kind: "arrayLiteral";
+  elements: Expression[];
+}
+
+export function arrayLiteral(elements: Expression[]): ArrayLiteral {
+  return {
+    kind: "arrayLiteral",
+    elements,
+  };
+}
+
 export interface FunctionLiteral {
   kind: "functionLiteral";
   parameters: Identifier[];
@@ -198,16 +210,35 @@ export function callExpression(
   };
 }
 
+export interface IndexExpression {
+  kind: "indexExpression";
+  left: Expression;
+  index: Expression;
+}
+
+export function indexExpression(
+  left: Expression,
+  index: Expression
+): IndexExpression {
+  return {
+    kind: "indexExpression",
+    left,
+    index,
+  };
+}
+
 export type Expression =
   | Identifier
   | IntegerLiteral
   | BooleanLiteral
+  | ArrayLiteral
   | StringLiteral
   | FunctionLiteral
   | PrefixExpression
   | InfixExpression
   | IfExpression
-  | CallExpression;
+  | CallExpression
+  | IndexExpression;
 
 export type Node = Statement | Expression | Program;
 
@@ -241,6 +272,8 @@ export function toString(node: Node): string {
       return `${node.value.toString()}`;
     case "stringLiteral":
       return `"${node.value}"`;
+    case "arrayLiteral":
+      return `[${node.elements.map(toString).join(", ")}]`;
     case "prefixExpression":
       return `(${node.operator}${toString(node.right)})`;
     case "infixExpression": {
@@ -272,6 +305,11 @@ export function toString(node: Node): string {
     }
     case "blockStatement": {
       return node.statements.map(toString).join("");
+    }
+    case "indexExpression": {
+      const left = toString(node.left);
+      const index = toString(node.index);
+      return `(${left}[${index}])`;
     }
   }
 }
