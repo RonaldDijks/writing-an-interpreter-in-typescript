@@ -4,17 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^29.5.13",
     "@types/node": "^20.16.11",
     "@types/object-hash": "^3.0.6",
-    "jest": "^29.7.0",
-    "prettier": "^3.3.3",
-    "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
   "scripts": {
     "start": "bun run src/index.ts",
-    "test": "tsc --noEmit && jest"
   },
   "dependencies": {
     "object-hash": "^3.0.0"
